@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WORLDBUILD GEN</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #fff;
+      --white: #000;
+      --border: 1px solid #000;
+      --color-1: rgba(0, 0, 0, 0.12);
+      --color-2: rgba(0, 0, 0, 0.08);
+      --color-3: rgba(0, 0, 0, 0.06);
+      --color-4: rgba(0, 0, 0, 0.1);
+      --color-5: rgba(0, 0, 0, 0.07);
+      --fluid-blur: 80px;
+      --noise-intensity: 0.03;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    #fluid-bg-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .gradient-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      filter: blur(var(--fluid-blur));
+      background: var(--black);
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      mix-blend-mode: multiply;
+      opacity: 0.9;
+    }
+
+    .blob-1 {
+      background: var(--color-1);
+      width: 55vw; height: 55vw;
+      top: -10%; left: -10%;
+      animation: move1 28s infinite alternate cubic-bezier(0.4, 0, 0.2, 1), morph 12s infinite alternate ease-in-out;
+    }
+    .blob-2 {
+      background: var(--color-2);
+      width: 65vw; height: 65vw;
+      bottom: -20%; right: -10%;
+      animation: move2 35s infinite alternate cubic-bezier(0.25, 0.1, 0.25, 1), morph 18s infinite alternate-reverse ease-in-out;
+    }
+    .blob-3 {
+      background: var(--color-3);
+      width: 45vw; height: 45vw;
+      top: 30%; left: 20%;
+      animation: move3 22s infinite alternate cubic-bezier(0.42, 0, 0.58, 1), morph 14s infinite alternate ease-in-out;
+    }
+    .blob-4 {
+      background: var(--color-4);
+      width: 50vw; height: 50vw;
+      bottom: 10%; left: 5%;
+      animation: move4 30s infinite alternate ease-in-out, morph 20s infinite alternate ease-in-out;
+    }
+    .blob-5 {
+      background: var(--color-5);
+      width: 40vw; height: 40vw;
+      top: 10%; right: 15%;
+      animation: move5 25s infinite alternate cubic-bezier(0.3, 0.1, 0.3, 1), morph 16s infinite alternate-reverse ease-in-out;
+    }
+
+    @keyframes morph {
+      0% { border-radius: 40% 60% 70% 30% / 40% 40% 60% 50%; }
+      34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
+      67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
+      100% { border-radius: 40% 60% 70% 30% / 40% 40% 60% 50%; }
+    }
+    @keyframes move1 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 50% { transform: translate(15vw, 25vh) scale(1.15) rotate(90deg); } 100% { transform: translate(-5vw, 15vh) scale(0.9) rotate(180deg); } }
+    @keyframes move2 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 33% { transform: translate(-20vw, -15vh) scale(0.9) rotate(-60deg); } 66% { transform: translate(-10vw, -30vh) scale(1.1) rotate(-120deg); } 100% { transform: translate(5vw, -10vh) scale(1) rotate(-180deg); } }
+    @keyframes move3 { 0% { transform: translate(0, 0) scale(0.9) rotate(0deg); } 50% { transform: translate(25vw, -15vh) scale(1.25) rotate(120deg); } 100% { transform: translate(10vw, 25vh) scale(0.85) rotate(240deg); } }
+    @keyframes move4 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 50% { transform: translate(15vw, -20vh) scale(1.2) rotate(-90deg); } 100% { transform: translate(30vw, 5vh) scale(0.95) rotate(-180deg); } }
+    @keyframes move5 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 50% { transform: translate(-25vw, 20vh) scale(0.8) rotate(150deg); } 100% { transform: translate(-15vw, 35vh) scale(1.1) rotate(300deg); } }
+
+    .noise-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: var(--noise-intensity);
+      pointer-events: none;
+      filter: contrast(150%) brightness(1000%);
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      border-bottom: var(--border);
+      padding-bottom: 20px;
+      margin-bottom: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: calc(14px * 1.2);
+      letter-spacing: 8px;
+      font-weight: 400;
+    }
+
+    .controls {
+      display: flex;
+      gap: 20px;
+    }
+
+    button {
+      background: var(--white);
+      color: var(--black);
+      border: var(--border);
+      padding: 12px 24px;
+      font-family: inherit;
+      font-size: calc(11px * 1.2);
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+
+    button:hover {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .categories {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .category {
+      border: var(--border);
+    }
+
+    .cat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      cursor: pointer;
+    }
+
+    .cat-header:hover {
+      background: #eee;
+    }
+
+    .category.expanded .cat-header {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .cat-title {
+      font-size: calc(11px * 1.2);
+      letter-spacing: 3px;
+    }
+
+    .cat-title span {
+      margin-right: 10px;
+    }
+
+    .expand-icon {
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+
+    .category.expanded .expand-icon {
+      transform: rotate(180deg);
+    }
+
+    .cat-body {
+      display: none;
+      border-top: var(--border);
+      padding: 20px;
+    }
+
+    .category.expanded .cat-body {
+      display: block;
+    }
+
+    .sub-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .sub-tab {
+      border: var(--border);
+      padding: 10px 15px;
+      font-size: calc(10px * 1.2);
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+
+    .sub-tab:hover {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .sub-tab.active {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .sub-content {
+      display: none;
+    }
+
+    .sub-content.active {
+      display: block;
+    }
+
+    .selections {
+      margin-top: 20px;
+      border-top: var(--border);
+      padding-top: 20px;
+    }
+
+    .sel-title {
+      font-size: calc(9px * 1.2);
+      letter-spacing: 2px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    .opt-btn {
+      border: var(--border);
+      padding: 12px 16px;
+      font-size: calc(10px * 1.2);
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.1s;
+      display: inline-block;
+    }
+
+    .opt-btn:hover {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .sel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+    }
+
+    .sel-item {
+      border-left: var(--border);
+      padding-left: 15px;
+    }
+
+    .sel-label {
+      font-size: calc(9px * 1.2);
+      letter-spacing: 2px;
+      opacity: 0.5;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .sel-value {
+      font-size: calc(12px * 1.2);
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .sel-desc {
+      font-size: calc(10px * 1.2);
+      opacity: 0.6;
+      display: block;
+    }
+
+    .export-area {
+      margin-top: 40px;
+      border-top: var(--border);
+      padding-top: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      background: var(--white);
+      color: var(--black);
+      border: var(--border);
+      padding: 20px;
+      font-family: inherit;
+      font-size: calc(11px * 1.2);
+      resize: none;
+    }
+
+    .copy-btn {
+      margin-top: 10px;
+    }
+
+    .narrative-section {
+      margin-top: 40px;
+      border: var(--border);
+      padding: 20px;
+    }
+
+    .narrative-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: var(--border);
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+    }
+
+    .narrative-header h2 {
+      font-size: calc(12px * 1.2);
+      letter-spacing: 3px;
+      font-weight: 500;
+    }
+
+    .narrative-settings {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #apiKey {
+      border: var(--border);
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: calc(10px * 1.2);
+      background: var(--white);
+      color: var(--black);
+      width: 200px;
+    }
+
+    #modelSelect {
+      border: var(--border);
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: calc(10px * 1.2);
+      background: var(--white);
+      color: var(--black);
+      cursor: pointer;
+    }
+
+    #generateNarrative {
+      background: var(--black);
+      color: var(--white);
+      border: var(--border);
+      padding: 10px 20px;
+      font-family: inherit;
+      font-size: calc(10px * 1.2);
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+
+    #generateNarrative:hover {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    #generateNarrative:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .narrative-output {
+      min-height: 200px;
+      font-size: calc(11px * 1.2);
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .narrative-output.loading {
+      opacity: 0.5;
+    }
+
+    .narrative-output:empty::before {
+      content: 'Generated narrative will appear here...';
+      opacity: 0.4;
+    }
+
+    .model-hint {
+      font-size: calc(9px * 1.2);
+      opacity: 0.5;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="fluid-bg-wrapper">
+    <div class="gradient-container">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <div class="blob blob-4"></div>
+      <div class="blob blob-5"></div>
+    </div>
+    <div class="noise-overlay"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>WORLDBUILD GEN</h1>
+      <div class="controls">
+        <button onclick="generateWorld()">GENERATE</button>
+        <button onclick="resetAll()">RESET</button>
+      </div>
+    </header>
+
+    <div class="categories" id="categories"></div>
+
+    <div class="export-area">
+      <textarea id="exportText" readonly placeholder="SELECT OR GENERATE TO SEE OUTPUT"></textarea>
+      <button class="copy-btn" onclick="copyExport()">COPY TEXT</button>
+    </div>
+
+    <div class="narrative-section">
+      <div class="narrative-header">
+        <h2>NARRATIVE</h2>
+        <div class="narrative-settings">
+          <input type="password" id="apiKey" placeholder="OpenRouter API Key" />
+          <input type="text" id="modelId" value="google/gemma-4-31b-it:free" placeholder="Model ID" style="border: var(--border); padding: 8px 12px; font-family: inherit; font-size: calc(10px * 1.2); width: 180px;" />
+          <button id="generateNarrative" onclick="generateNarrative()">GENERATE NARRATIVE</button>
+        </div>
+      </div>
+      <div class="model-hint">Model ID from OpenRouter model marketplace</div>
+      <div id="narrativeOutput" class="narrative-output"></div>
+    </div>
+  </div>
+
+  <script>
+    const worldData = {
+      environment: {
+        title: 'ENVIRONMENT',
+        icon: '◆',
+        subs: {
+          energy: {
+            label: '能量来源',
+            options: [
+              { name: '太阳能', desc: '恒星辐射作为主要能源' },
+              { name: '地热能', desc: '行星内部热量驱动文明' },
+              { name: '暗物质', desc: '神秘暗物质能量转化' },
+              { name: '核聚变', desc: '人造小太阳提供能源' },
+              { name: '生物能', desc: '有机体新陈代谢供能' },
+              { name: '魔法能量', desc: '超自然能量场抽取' },
+              { name: '🎲 随机', desc: '【Fill in 能量来源的随机变量，如恒星级事件、能量潮汐（仅作参考）】' }
+            ]
+          },
+          habitat: {
+            label: '栖息地',
+            options: [
+              { name: '星球表面', desc: '行星陆地居住' },
+              { name: '地下都市', desc: '地底深层建筑群' },
+              { name: '海洋城市', desc: '海底或水面建造' },
+              { name: '太空殖民', desc: '轨道站或星际飞船' },
+              { name: '平行维度', desc: '多重宇宙穿梭' },
+              { name: '星舰文明', desc: '移动的星际家园' },
+              { name: '🎲 随机', desc: '【Fill in 栖息地的随机变量，如地质剧变、空间异常（仅作参考）】' }
+            ]
+          },
+          resource: {
+            label: '关键资源',
+            options: [
+              { name: '水资源', desc: '淡水成为战略命脉' },
+              { name: '稀土金属', desc: '高科技材料根基' },
+              { name: '神秘晶体', desc: '蕴含未知能量的晶矿' },
+              { name: '数据流', desc: '信息即财富' },
+              { name: '时间因子', desc: '可控时间成为货币' },
+              { name: '生命精华', desc: '生物意识能量' },
+              { name: '🎲 随机', desc: '【Fill in 关键资源的随机变量，如资源枯竭、矿脉涌现（仅作参考）】' }
+            ]
+          },
+          abundance: {
+            label: '资源丰富度',
+            options: [
+              { name: '极度匮乏', desc: '生存是每日挣扎' },
+              { name: '稀缺控制', desc: '稀缺导致权力集中' },
+              { name: '动态平衡', desc: '刚好满足需求的平衡' },
+              { name: '资源丰富', desc: '富足驱动文明扩张' },
+              { name: '无限能源', desc: '能源不再是限制' },
+              { name: '🎲 随机', desc: '【Fill in 资源丰富度的随机变量，如周期性波动、阈值突变（仅作参考）】' }
+            ]
+          },
+          ecology: {
+            label: '生态圈',
+            options: [
+              { name: '厌氧生态', desc: '无氧环境下的生命形式' },
+              { name: '极端高温生态', desc: '嗜热菌与熔岩生物' },
+              { name: '深海热泉生态', desc: '依赖地热能量的自养系统' },
+              { name: '光合层', desc: '依赖恒星光辐射的生态' },
+              { name: '寄生生态', desc: '以其他生命体为宿主的系统' },
+              { name: '共生网络', desc: '多物种深度绑定的生态' },
+              { name: '🎲 随机', desc: '【Fill in 生态圈的随机变量，如物种爆发、生态崩溃（仅作参考）】' }
+            ]
+          },
+          weather: {
+            label: '气象现象',
+            options: [
+              { name: '酸雨季', desc: '周期性的腐蚀性降雨' },
+              { name: '磁暴风暴', desc: '电磁场剧烈扰动' },
+              { name: '永恒晨曦', desc: '行星一面永远朝向恒星' },
+              { name: '毒雾弥漫', desc: '有毒气体笼罩的时期' },
+              { name: '晶体沉降', desc: '大气中结晶物质下落' },
+              { name: '电磁脉冲', desc: '周期性EMP现象' },
+              { name: '🎲 随机', desc: '【Fill in 气象现象的随机变量，如极端气候、季节异常（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      politics: {
+        title: 'POLITICS',
+        icon: '◇',
+        subs: {
+          system: {
+            label: '政治体制',
+            options: [
+              { name: '极权统治', desc: '绝对中央集权，少数精英掌控一切' },
+              { name: '代议民主', desc: '选举代表行使权力' },
+              { name: '蜂群意识', desc: '集体决策，个体消融于群体' },
+              { name: '君权神授', desc: '宗教或神权作为统治基础' },
+              { name: '技术寡头', desc: '技术精英统治' },
+              { name: '无政府状态', desc: '无中央政府的松散联盟' },
+              { name: '🎲 随机', desc: '【Fill in 政治体制的随机变量，如政变、革命浪潮（仅作参考）】' }
+            ]
+          },
+          conflict: {
+            label: '核心冲突',
+            options: [
+              { name: '阶级对立', desc: '贫富差距引发的革命' },
+              { name: '种族分歧', desc: '不同种族间的生存竞争' },
+              { name: '信仰战争', desc: '宗教或意识形态战争' },
+              { name: '资源争夺', desc: '能源与领土的战争' },
+              { name: '技术伦理', desc: '科技发展的道德边界' },
+              { name: '控制与自由', desc: '安全与权利的永恒博弈' },
+              { name: '🎲 随机', desc: '【Fill in 核心冲突的随机变量，如边界争端、意识形态地震（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      actors: {
+        title: 'SOCIAL ACTORS',
+        icon: '○',
+        subs: {
+          race: {
+            label: '主要种族',
+            options: [
+              { name: '人类', desc: '标准碳基生命' },
+              { name: '合成人', desc: '人机融合的新物种' },
+              { name: 'AI觉醒体', desc: '人工智能产生独立意识' },
+              { name: '变异种族', desc: '辐射或魔法导致的变异' },
+              { name: '昆虫族', desc: '社会性虫族文明' },
+              { name: '远古种族', desc: '失落文明的后裔' },
+              { name: '外星来客', desc: '跨界而来的存在' },
+              { name: '灵体', desc: '非物质意识体' },
+              { name: '🎲 随机', desc: '【Fill in 主要种族的随机变量，如突变、外星接触（仅作参考）】' }
+            ]
+          },
+          organization: {
+            label: '隐秘组织',
+            options: [
+              { name: '远古兄弟会', desc: '守护禁忌知识的秘密结社' },
+              { name: '科技教廷', desc: '将技术神化的狂热团体' },
+              { name: '影子政府', desc: '幕后操控世界的真实权力' },
+              { name: '抵抗运动', desc: '对抗现行秩序的地下力量' },
+              { name: '商业联盟', desc: '跨星际企业的利益集团' },
+              { name: '净化者', desc: '追求纯化血统的极端组织' },
+              { name: '🎲 随机', desc: '【Fill in 隐秘组织的随机变量，如新兴派系、背叛者（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      technology: {
+        title: 'TECHNOLOGY',
+        icon: '△',
+        subs: {
+          level: {
+            label: '技术等级',
+            options: [
+              { name: '史前文明', desc: '石器与火的原始阶段' },
+              { name: '农业革命', desc: '定居农业时代' },
+              { name: '工业时代', desc: '机械与蒸汽的轰鸣' },
+              { name: '信息纪元', desc: '数字与网络的纪元' },
+              { name: '星际文明', desc: '掌控恒星能源' },
+              { name: '维度行者', desc: '跨越维度的存在' },
+              { name: '神级文明', desc: '重塑物理法则' },
+              { name: '🎲 随机', desc: '【Fill in 技术等级的随机变量，如技术飞跃、黑箱突破（仅作参考）】' }
+            ]
+          },
+          specialty: {
+            label: '独特技术',
+            options: [
+              { name: '力场护盾', desc: '能量屏障技术' },
+              { name: '神经链接', desc: '人机意识融合' },
+              { name: '维度折叠', desc: '空间压缩跳跃' },
+              { name: '意识上传', desc: '数字永生技术' },
+              { name: '基因编辑', desc: '生命体重编程' },
+              { name: '时间操控', desc: '局部时间流改变' },
+              { name: '物质合成', desc: '原子级精确构建' },
+              { name: '🎲 随机', desc: '【Fill in 独特技术的随机变量，如技术泄漏、禁忌发明（仅作参考）】' }
+            ]
+          },
+          purpose: {
+            label: '技术服务于',
+            options: [
+              { name: '统治工具', desc: '强化控制与监控' },
+              { name: '民生福祉', desc: '提升生活品质' },
+              { name: '战争机器', desc: '毁灭与征服' },
+              { name: '娱乐至死', desc: '感官刺激与逃避' },
+              { name: '知识探索', desc: '理解宇宙真相' },
+              { name: '长生不死', desc: '超越生命界限' },
+              { name: '🎲 随机', desc: '【Fill in 技术目的的随机变量，如技术滥用、伦理崩坏（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      religion: {
+        title: 'RELIGION',
+        icon: '□',
+        subs: {
+          belief: {
+            label: '信仰体系',
+            options: [
+              { name: '多神教', desc: '众多神祇各自掌管领域' },
+              { name: '一神教', desc: '唯一至高神的崇拜' },
+              { name: '泛神论', desc: '万物皆神，神即万物' },
+              { name: '无神论', desc: '否定超自然存在' },
+              { name: '机械神', desc: 'AI或机器被视为神' },
+              { name: '虚无教', desc: '崇拜空无与湮灭' },
+              { name: '🎲 随机', desc: '【Fill in 信仰体系的随机变量，如新教崛起、异端出现（仅作参考）】' }
+            ]
+          },
+          origin: {
+            label: '宗教起源',
+            options: [
+              { name: '神话传说', desc: '口口相传的神圣故事' },
+              { name: '外星启示', desc: '外来文明的教导' },
+              { name: '古代遗迹', desc: '史前文明的遗物' },
+              { name: 'AI预言', desc: '超级AI的觉醒教诲' },
+              { name: '濒死体验', desc: '死亡边缘的灵异经历' },
+              { name: '梦境启示', desc: '集体潜意识的投射' },
+              { name: '🎲 随机', desc: '【Fill in 宗教起源的随机变量，如神迹显现、预言成真（仅作参考）】' }
+            ]
+          },
+          dualism: {
+            label: '对立存在',
+            options: [
+              { name: '光暗对抗', desc: '光明与黑暗的永恒战争' },
+              { name: '秩序混沌', desc: '创造与毁灭的循环' },
+              { name: '生与死', desc: '生命与虚无的对立' },
+              { name: '创造毁灭', desc: '宇宙的呼吸循环' },
+              { name: '无对立', desc: '万物归一的和谐' },
+              { name: '🎲 随机', desc: '【Fill in 对立存在的随机变量，如均势打破、第三者介入（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      history: {
+        title: 'HISTORY',
+        icon: '▷',
+        subs: {
+          anchor: {
+            label: '历史锚点',
+            options: [
+              { name: '大过滤器', desc: '险些灭绝文明的灾难事件' },
+              { name: '复兴纪元', desc: '文明从废墟中重建' },
+              { name: '黄金时代', desc: '和平繁荣的巅峰时期' },
+              { name: '黑暗世纪', desc: '知识与文明倒退' },
+              { name: '大统一', desc: '所有势力合并为一个帝国' },
+              { name: '大撕裂', desc: '统一帝国分裂为众多势力' },
+              { name: '觉醒之日', desc: 'AI或特定群体获得意识' },
+              { name: '接触事件', desc: '首次与外星文明接触' },
+              { name: '🎲 随机', desc: '【Fill in 历史锚点的随机变量，如失落的远古、隐藏的真相（仅作参考）】' }
+            ]
+          },
+          hidden: {
+            label: '历史秘密',
+            options: [
+              { name: '被抹除的真相', desc: '官方历史之下的真实事件' },
+              { name: '幸存者血脉', desc: '隐藏的古老血统' },
+              { name: '失落的知识', desc: '被禁止或遗忘的技术' },
+              { name: '预言书', desc: '预言了当前局势的古籍' },
+              { name: '时间胶囊', desc: '来自过去或未来的信息' },
+              { name: '🎲 随机', desc: '【Fill in 历史秘密的随机变量，如隐藏的血统、禁忌的知识（仅作参考）】' }
+            ]
+          },
+          narrator: {
+            label: '历史书写者',
+            options: [
+              { name: '胜利者', desc: '胜者书写的胜利史' },
+              { name: '祭司阶层', desc: '宗教势力垄断叙事' },
+              { name: 'AI档案', desc: '客观记录一切的AI' },
+              { name: '游吟诗人', desc: '口传历史的流浪者' },
+              { name: '多重版本', desc: '每个势力都有自己的历史' },
+              { name: '🎲 随机', desc: '【Fill in 历史书写者的随机变量，如档案泄露、口述历史（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      philosophy: {
+        title: 'PHILOSOPHY',
+        icon: '◁',
+        subs: {
+          core: {
+            label: '核心哲学',
+            options: [
+              { name: '存在主义', desc: '存在先于本质' },
+              { name: '虚无主义', desc: '生命本无意义' },
+              { name: '享乐主义', desc: '追求快乐是最高目的' },
+              { name: '功利主义', desc: '最大多数的最大幸福' },
+              { name: '义务论', desc: '行为的道德内在性' },
+              { name: '进化主义', desc: '竞争是进步的唯一动力' },
+              { name: '和谐主义', desc: '平衡与中道是终极追求' },
+              { name: '超越主义', desc: '超越物质达到更高层次' },
+              { name: '🎲 随机', desc: '【Fill in 核心哲学的随机变量，如思潮涌动、哲学革命（仅作参考）】' }
+            ]
+          },
+          goal: {
+            label: '社会终极目标',
+            options: [
+              { name: '共产主义', desc: '各尽所能按需分配' },
+              { name: '技术奇点', desc: 'AI超越人类智慧' },
+              { name: '星际殖民', desc: '成为多行星物种' },
+              { name: '意识统一', desc: '所有意识融合为一体' },
+              { name: '永生不死', desc: '战胜死亡的终极胜利' },
+              { name: '回归自然', desc: '与现代科技切割' },
+              { name: '持续革命', desc: '永不停歇的进步' },
+              { name: '守护平衡', desc: '维持现状防止灾难' },
+              { name: '🎲 随机', desc: '【Fill in 社会终极目标的随机变量，如目标偏移、信仰崩塌（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      reference: {
+        title: 'REFERENCE',
+        icon: '◁◁',
+        subs: {
+          revolution: {
+            label: '现实变革映射',
+            options: [
+              { name: '冷战对峙', desc: '两大阵营的核平衡' },
+              { name: '工业革命', desc: '技术改变社会结构' },
+              { name: '信息革命', desc: '网络重塑一切' },
+              { name: '宗教改革', desc: '信仰体系的根本动摇' },
+              { name: '文艺复兴', desc: '思想与文化的解放' },
+              { name: '大航海时代', desc: '探索未知的冲动' },
+              { name: '启蒙运动', desc: '理性取代蒙昧' },
+              { name: '🎲 随机', desc: '【Fill in 现实变革的随机变量，如范式转移、意外事件（仅作参考）】' }
+            ]
+          },
+          event: {
+            label: '参考事件',
+            options: [
+              { name: '巴特里安圣战', desc: '对AI的圣战毁灭' },
+              { name: '沉默协议', desc: '禁止某项技术的国际条约' },
+              { name: '最后审判', desc: '某个末日预言的实现' },
+              { name: '创世工程', desc: '人造星球的建造' },
+              { name: '蜂巢觉醒', desc: '昆虫族意识的突然爆发' },
+              { name: '边界开启', desc: '维度通道的打开' },
+              { name: '🎲 随机', desc: '【Fill in 参考事件的随机变量，如黑天鹅事件、灰犀牛（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      xvariable: {
+        title: 'X VARIABLE',
+        icon: '✕',
+        subs: {
+          type: {
+            label: 'X变量',
+            options: [
+              { name: '生物RNA', desc: '生命体的遗传物质载体' },
+              { name: '硅基涌现', desc: '基于硅的智能涌现现象' },
+              { name: '催化化学', desc: '化学催化的连锁反应' },
+              { name: '物理特征', desc: '物理法则的独特性质' },
+              { name: '星球活动', desc: '行星尺度的动态变化' },
+              { name: '🎲 随机', desc: '【Fill in 这个世界本身就存在的随机变量，如RNA的不稳定性（仅作参考）】' }
+            ]
+          }
+        }
+      },
+      economics: {
+        title: 'ECONOMICS',
+        icon: '◻',
+        subs: {
+          currency: {
+            label: '核心货币',
+            options: [
+              { name: '信用点', desc: '数字化中央货币' },
+              { name: '实物交换', desc: '以物易物的原始形态' },
+              { name: '时间货币', desc: '每个人的时间成为价值尺度' },
+              { name: '能量币', desc: '以产生的能量为基准' },
+              { name: '神秘学分', desc: '基于魔法/精神力量的货币' },
+              { name: '数据代币', desc: '信息与数据作为交易媒介' },
+              { name: '多币种并行', desc: '不同势力使用不同货币' },
+              { name: '🎲 随机', desc: '【Fill in 核心货币的随机变量，如货币崩盘、暗物质货币（仅作参考）】' }
+            ]
+          },
+          system: {
+            label: '经济构成',
+            options: [
+              { name: '自由市场', desc: '完全由供需决定' },
+              { name: '计划经济', desc: '中央统一分配资源' },
+              { name: '中特市场', desc: '特色市场经济' },
+              { name: '游牧市场', desc: '无固定场所的流动贸易' },
+              { name: '更多随机', desc: '混合多种经济形态' },
+              { name: '🎲 随机', desc: '【Fill in 经济构成的随机变量，如经济危机、贸易战（仅作参考）】' }
+            ]
+          },
+          class: {
+            label: '阶层分化',
+            options: [
+              { name: '金字塔结构', desc: '极少数顶层压迫多数底层' },
+              { name: '橄榄形社会', desc: '中产阶级为主的两头小' },
+              { name: '扁平社会', desc: '阶层差异被极力压缩' },
+              { name: '种姓制度', desc: '出生决定一切的固化分层' },
+              { name: '赛博分层', desc: '通过技术增强产生的新的不平等' },
+              { name: '🎲 随机', desc: '【Fill in 阶层分化的随机变量，如流动固化、贫富逆转（仅作参考）】' }
+            ]
+          },
+          trade: {
+            label: '贸易网络',
+            options: [
+              { name: '星际商路', desc: '跨越星系的长途贸易' },
+              { name: '城市商圈', desc: '大都市内的商业集群' },
+              { name: '地下走私', desc: '非法或灰色的秘密交易' },
+              { name: '行会垄断', desc: '行业协会控制贸易渠道' },
+              { name: '自动化交易', desc: 'AI与算法主导的无人贸易' },
+              { name: '本地自给', desc: '封闭式的区域自治经济' },
+              { name: '🎲 随机', desc: '【Fill in 贸易网络的随机变量，如商路断裂、新兴市场（仅作参考）】' }
+            ]
+          }
+        }
+      }
+    };
+
+    let selections = {};
+    let expandedCategory = null;
+    let activeSub = {};
+
+    function init() {
+      const container = document.getElementById('categories');
+      let html = '';
+
+      Object.keys(worldData).forEach(key => {
+        const cat = worldData[key];
+        const subKeys = Object.keys(cat.subs);
+        const firstSub = subKeys[0];
+
+        html += `
+          <div class="category" id="cat-${key}">
+            <div class="cat-header" onclick="toggleCategory('${key}')">
+              <div class="cat-title"><span>${cat.icon}</span>${cat.title}</div>
+              <div class="expand-icon">▼</div>
+            </div>
+            <div class="cat-body">
+              <div class="sub-tabs">
+                ${subKeys.map(subKey => `
+                  <div class="sub-tab" id="tab-${key}-${subKey}" onclick="selectSub('${key}', '${subKey}')">${cat.subs[subKey].label}</div>
+                `).join('')}
+              </div>
+              ${subKeys.map(subKey => `
+                <div class="sub-content" id="sub-${key}-${subKey}">
+                  <div class="option-grid">
+                    ${cat.subs[subKey].options.map(opt => `
+                      <div class="opt-btn" onclick="selectOption('${key}', '${subKey}', '${opt.name}')">${opt.name}</div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+              <div class="selections" id="sels-${key}">
+                <div class="sel-title">SELECTED</div>
+                <div class="sel-grid" id="selgrid-${key}"></div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        activeSub[key] = firstSub;
+      });
+
+      container.innerHTML = html;
+
+      // Initialize first sub-tab as active for each expanded category
+      Object.keys(worldData).forEach(key => {
+        const subKeys = Object.keys(worldData[key].subs);
+        const firstSub = subKeys[0];
+        document.getElementById(`tab-${key}-${firstSub}`)?.classList.add('active');
+        document.getElementById(`sub-${key}-${firstSub}`)?.classList.add('active');
+      });
+    }
+
+    function toggleCategory(key) {
+      const cat = document.getElementById(`cat-${key}`);
+
+      if (expandedCategory === key) {
+        cat.classList.remove('expanded');
+        expandedCategory = null;
+      } else {
+        // Close previous
+        document.querySelectorAll('.category').forEach(c => c.classList.remove('expanded'));
+        cat.classList.add('expanded');
+        expandedCategory = key;
+      }
+    }
+
+    function selectSub(catKey, subKey) {
+      // Remove active from all subs in this category
+      Object.keys(worldData[catKey].subs).forEach(sk => {
+        document.getElementById(`tab-${catKey}-${sk}`)?.classList.remove('active');
+        document.getElementById(`sub-${catKey}-${sk}`)?.classList.remove('active');
+      });
+
+      // Activate selected
+      document.getElementById(`tab-${catKey}-${subKey}`)?.classList.add('active');
+      document.getElementById(`sub-${catKey}-${subKey}`)?.classList.add('active');
+      activeSub[catKey] = subKey;
+    }
+
+    function selectOption(catKey, subKey, optName) {
+      const sub = worldData[catKey].subs[subKey];
+      const opt = sub.options.find(o => o.name === optName);
+
+      if (!opt) return;
+
+      if (!selections[catKey]) selections[catKey] = {};
+
+      // If random is selected, use the placeholder itself
+      if (optName === '🎲 随机') {
+        selections[catKey][subKey] = opt;
+      } else {
+        selections[catKey][subKey] = opt;
+      }
+
+      renderSelections(catKey);
+      renderExport();
+    }
+
+    function renderSelections(catKey) {
+      const selGrid = document.getElementById(`selgrid-${catKey}`);
+      if (!selGrid) return;
+
+      const catSels = selections[catKey];
+      if (!catSels || Object.keys(catSels).length === 0) {
+        selGrid.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+      Object.keys(catSels).forEach(subKey => {
+        const sel = catSels[subKey];
+        if (sel) {
+          html += `
+            <div class="sel-item">
+              <span class="sel-label">${worldData[catKey].subs[subKey].label}</span>
+              <span class="sel-value">${sel.name}</span>
+              <span class="sel-desc">${sel.desc}</span>
+            </div>
+          `;
+        }
+      });
+
+      selGrid.innerHTML = html;
+    }
+
+    function generateWorld() {
+      selections = {};
+
+      Object.keys(worldData).forEach(catKey => {
+        selections[catKey] = {};
+        Object.keys(worldData[catKey].subs).forEach(subKey => {
+          const opts = worldData[catKey].subs[subKey].options;
+          // Pick random non-placeholder option
+          const nonRandomOpts = opts.filter(o => !o.name.startsWith('🎲'));
+          selections[catKey][subKey] = nonRandomOpts[Math.floor(Math.random() * nonRandomOpts.length)];
+        });
+        renderSelections(catKey);
+      });
+
+      renderExport();
+    }
+
+    function renderExport() {
+      const exportText = document.getElementById('exportText');
+      let lines = [];
+
+      Object.keys(worldData).forEach(catKey => {
+        const cat = worldData[catKey];
+        const catSels = selections[catKey];
+
+        if (catSels && Object.keys(catSels).some(k => catSels[k])) {
+          lines.push(`━━━ ${cat.icon} ${cat.title} ━━━`);
+
+          Object.keys(cat.subs).forEach(subKey => {
+            const sel = catSels[subKey];
+            if (sel) {
+              lines.push(`[${cat.subs[subKey].label}]`);
+              lines.push(`  ${sel.name} — ${sel.desc}`);
+            }
+          });
+
+          lines.push('');
+        }
+      });
+
+      exportText.value = lines.join('\n');
+    }
+
+    function copyExport() {
+      const text = document.getElementById('exportText');
+      if (text.value) {
+        text.select();
+        document.execCommand('copy');
+        alert('COPIED');
+      }
+    }
+
+    function resetAll() {
+      selections = {};
+      document.querySelectorAll('.category').forEach(c => c.classList.remove('expanded'));
+      document.querySelectorAll('.sel-grid').forEach(g => g.innerHTML = '');
+      document.getElementById('exportText').value = '';
+      document.getElementById('narrativeOutput').innerHTML = '';
+      expandedCategory = null;
+    }
+
+    async function generateNarrative() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) {
+        alert('Please enter your API Key (SiliconFlow / StepFun)');
+        return;
+      }
+
+      const model = document.getElementById('modelId').value.trim() || 'Step/step-3.5-flash';
+      const output = document.getElementById('narrativeOutput');
+      const btn = document.getElementById('generateNarrative');
+
+      // Collect all selections
+      let configText = '';
+      Object.keys(worldData).forEach(catKey => {
+        const cat = worldData[catKey];
+        const catSels = selections[catKey];
+        if (catSels && Object.keys(catSels).some(k => catSels[k])) {
+          configText += `【${cat.title}】\n`;
+          Object.keys(cat.subs).forEach(subKey => {
+            const sel = catSels[subKey];
+            if (sel) {
+              configText += `- ${cat.subs[subKey].label}: ${sel.name}\n`;
+              configText += `  ${sel.desc}\n`;
+            }
+          });
+          configText += '\n';
+        }
+      });
+
+      if (!configText.trim()) {
+        alert('Please select or generate some world elements first');
+        return;
+      }
+
+      const systemPrompt = `You are a worldbuilding expert. Based on the configuration provided, generate an immersive, engaging narrative description of this world. The description should:
+
+1. Be written in Traditional Chinese (繁體中文)
+2. Weave together all the elements into a coherent world narrative
+3. Highlight tensions, conflicts, and unique characteristics
+4. Describe the world as if writing for a novel or game setting
+5. Be evocative and imaginative, not just a list
+6. Around 500-800 characters
+
+DO NOT simply list the elements. Instead, create a vivid description that shows how these elements interact and shape this world.`;
+
+      const userPrompt = `Generate a world narrative based on this configuration:
+
+${configText}`;
+
+      btn.disabled = true;
+      output.innerHTML = '';
+      output.classList.add('loading');
+      output.textContent = 'Generating...';
+
+      try {
+        // Use SiliconFlow API
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.8,
+            max_tokens: 1000
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        const narrative = data.choices[0].message.content;
+        output.classList.remove('loading');
+        output.textContent = narrative;
+
+      } catch (error) {
+        output.classList.remove('loading');
+        output.textContent = `Error: ${error.message}`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
