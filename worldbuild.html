@@ -456,12 +456,16 @@
         <h2>NARRATIVE</h2>
         <div class="narrative-settings">
           <input type="password" id="apiKey" placeholder="MiniMax API Key" />
-          <input type="text" id="modelId" value="MiniMax-M2.7" placeholder="Model ID" style="border: var(--border); padding: 8px 12px; font-family: inherit; font-size: calc(10px * 1.2); width: 180px;" />
+          <select id="modelId" style="border: var(--border); padding: 8px 12px; font-family: inherit; font-size: calc(10px * 1.2); width: 180px; background: var(--black); color: var(--white);">
+            <option value="MiniMax-M2.7">MiniMax-M2.7</option>
+            <option value="MiniMax-M2">MiniMax-M2</option>
+            <option value="abab6.5s">abab6.5s</option>
+            <option value="abab6.5">abab6.5</option>
+          </select>
           <button id="generateNarrative" onclick="generateNarrative()">GENERATE NARRATIVE</button>
         </div>
       </div>
-      <div class="model-hint">Model ID (e.g. MiniMax-M2.7)</div>
-      <div id="narrativeOutput" class="narrative-output"></div>
+            <div id="narrativeOutput" class="narrative-output"></div>
     </div>
   </div>
 
