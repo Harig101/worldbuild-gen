@@ -15,8 +15,6 @@
       --color-3: rgba(0, 0, 0, 0.06);
       --color-4: rgba(0, 0, 0, 0.1);
       --color-5: rgba(0, 0, 0, 0.07);
-      --fluid-blur: 80px;
-      --noise-intensity: 0.03;
     }
 
     * {
@@ -33,78 +31,7 @@
       padding: 40px;
     }
 
-    #fluid-bg-wrapper {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -1;
-      pointer-events: none;
-      overflow: hidden;
-    }
-
-    .gradient-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      filter: blur(var(--fluid-blur));
-      background: var(--black);
-      overflow: hidden;
-    }
-
-    .blob {
-      position: absolute;
-      mix-blend-mode: multiply;
-      opacity: 0.9;
-    }
-
-    .blob-1 {
-      background: var(--color-1);
-      width: 55vw; height: 55vw;
-      top: -10%; left: -10%;
-      animation: move1 28s infinite alternate cubic-bezier(0.4, 0, 0.2, 1), morph 12s infinite alternate ease-in-out;
-    }
-    .blob-2 {
-      background: var(--color-2);
-      width: 65vw; height: 65vw;
-      bottom: -20%; right: -10%;
-      animation: move2 35s infinite alternate cubic-bezier(0.25, 0.1, 0.25, 1), morph 18s infinite alternate-reverse ease-in-out;
-    }
-    .blob-3 {
-      background: var(--color-3);
-      width: 45vw; height: 45vw;
-      top: 30%; left: 20%;
-      animation: move3 22s infinite alternate cubic-bezier(0.42, 0, 0.58, 1), morph 14s infinite alternate ease-in-out;
-    }
-    .blob-4 {
-      background: var(--color-4);
-      width: 50vw; height: 50vw;
-      bottom: 10%; left: 5%;
-      animation: move4 30s infinite alternate ease-in-out, morph 20s infinite alternate ease-in-out;
-    }
-    .blob-5 {
-      background: var(--color-5);
-      width: 40vw; height: 40vw;
-      top: 10%; right: 15%;
-      animation: move5 25s infinite alternate cubic-bezier(0.3, 0.1, 0.3, 1), morph 16s infinite alternate-reverse ease-in-out;
-    }
-
-    @keyframes morph {
-      0% { border-radius: 40% 60% 70% 30% / 40% 40% 60% 50%; }
-      34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; }
-      67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; }
-      100% { border-radius: 40% 60% 70% 30% / 40% 40% 60% 50%; }
-    }
-    @keyframes move1 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 50% { transform: translate(15vw, 25vh) scale(1.15) rotate(90deg); } 100% { transform: translate(-5vw, 15vh) scale(0.9) rotate(180deg); } }
-    @keyframes move2 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 33% { transform: translate(-20vw, -15vh) scale(0.9) rotate(-60deg); } 66% { transform: translate(-10vw, -30vh) scale(1.1) rotate(-120deg); } 100% { transform: translate(5vw, -10vh) scale(1) rotate(-180deg); } }
-    @keyframes move3 { 0% { transform: translate(0, 0) scale(0.9) rotate(0deg); } 50% { transform: translate(25vw, -15vh) scale(1.25) rotate(120deg); } 100% { transform: translate(10vw, 25vh) scale(0.85) rotate(240deg); } }
-    @keyframes move4 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 50% { transform: translate(15vw, -20vh) scale(1.2) rotate(-90deg); } 100% { transform: translate(30vw, 5vh) scale(0.95) rotate(-180deg); } }
-    @keyframes move5 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 50% { transform: translate(-25vw, 20vh) scale(0.8) rotate(150deg); } 100% { transform: translate(-15vw, 35vh) scale(1.1) rotate(300deg); } }
-
-    .noise-overlay {
+.noise-overlay {
       position: absolute;
       top: 0;
       left: 0;
@@ -421,20 +348,178 @@
       opacity: 0.5;
       margin-bottom: 10px;
     }
+
+    .arena-section {
+      margin-top: 40px;
+      border-top: var(--border);
+      padding-top: 20px;
+    }
+
+    .arena-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .arena-header h2 {
+      font-size: calc(14px * 1.2);
+      font-weight: 500;
+    }
+
+    .arena-import-btn {
+      padding: 8px 16px;
+      border: var(--border);
+      background: var(--black);
+      color: var(--white);
+      font-family: inherit;
+      font-size: calc(10px * 1.2);
+      cursor: pointer;
+    }
+
+    .arena-import-btn:hover {
+      background: var(--color-4);
+    }
+
+    .arena-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .arena-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .arena-input-group label {
+      font-size: calc(9px * 1.2);
+      opacity: 0.6;
+    }
+
+    .arena-input-group input,
+    .arena-input-group textarea {
+      border: var(--border);
+      background: var(--black);
+      color: var(--white);
+      font-family: inherit;
+      font-size: calc(10px * 1.2);
+      padding: 8px 12px;
+    }
+
+    .arena-input-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .arena-groups {
+      margin-top: 20px;
+      border-top: var(--border);
+      padding-top: 15px;
+    }
+
+    .arena-groups h3 {
+      font-size: calc(11px * 1.2);
+      margin-bottom: 10px;
+      opacity: 0.7;
+    }
+
+    .arena-group-item {
+      border: var(--border);
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .arena-group-item:hover {
+      background: var(--color-1);
+    }
+
+    .arena-group-item h4 {
+      font-size: calc(11px * 1.2);
+      margin-bottom: 5px;
+    }
+
+    .arena-group-item p {
+      font-size: calc(9px * 1.2);
+      opacity: 0.6;
+      white-space: pre-wrap;
+    }
+
+    .export-options {
+      margin-top: 15px;
+      padding: 15px;
+      border: var(--border);
+      display: none;
+    }
+
+    .export-options.show {
+      display: block;
+    }
+
+    .export-options h3 {
+      font-size: calc(11px * 1.2);
+      margin-bottom: 10px;
+    }
+
+    .export-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: calc(10px * 1.2);
+    }
+
+    .export-checkbox input {
+      width: 16px;
+      height: 16px;
+    }
+
+    .export-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .export-btn {
+      padding: 8px 16px;
+      border: var(--border);
+      background: var(--black);
+      color: var(--white);
+      font-family: inherit;
+      font-size: calc(10px * 1.2);
+      cursor: pointer;
+    }
+
+    .export-btn:hover {
+      background: var(--color-4);
+    }
+
+    .export-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .current-export {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: var(--border);
+      font-size: calc(9px * 1.2);
+      white-space: pre-wrap;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .current-export-label {
+      font-size: calc(9px * 1.2);
+      opacity: 0.6;
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 <body>
-  <div id="fluid-bg-wrapper">
-    <div class="gradient-container">
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
-      <div class="blob blob-4"></div>
-      <div class="blob blob-5"></div>
-    </div>
-    <div class="noise-overlay"></div>
-  </div>
-
   <div class="container">
     <header>
       <h1>WORLDBUILD GEN</h1>
@@ -466,6 +551,55 @@
         </div>
       </div>
             <div id="narrativeOutput" class="narrative-output"></div>
+    </div>
+
+    <div class="arena-section">
+      <div class="arena-header">
+        <h2>ARENA</h2>
+        <button class="arena-import-btn" onclick="document.getElementById('arenaFileInput').click()">IMPORT JSON</button>
+        <input type="file" id="arenaFileInput" accept=".json" style="display:none" onchange="importArenaGroup(event)">
+      </div>
+      <div class="arena-inputs">
+        <div class="arena-input-group">
+          <label>族群名称</label>
+          <input type="text" id="arenaName" placeholder="输入族群名称">
+        </div>
+        <div class="arena-input-group">
+          <label>族群介绍</label>
+          <textarea id="arenaIntro" placeholder="输入族群介绍"></textarea>
+        </div>
+        <div class="arena-input-group">
+          <label>世界观内容 (NARRATIVE)</label>
+          <textarea id="arenaWorldview" placeholder="世界观内容"></textarea>
+        </div>
+        <div class="arena-input-group">
+          <label>世界构成</label>
+          <textarea id="arenaComposition" placeholder="世界构成"></textarea>
+        </div>
+      </div>
+      <button class="copy-btn" onclick="saveToArena()">SAVE TO ARENA</button>
+
+      <div class="export-options" id="exportOptions">
+        <div class="current-export-label">当前导出内容预览：</div>
+        <div class="current-export" id="currentExportPreview"></div>
+        <h3>导出选项</h3>
+        <label class="export-checkbox">
+          <input type="checkbox" id="exportToArena">
+          保存至 Arena groups
+        </label>
+        <label class="export-checkbox">
+          <input type="checkbox" id="exportToJson">
+          下载 JSON 文件
+        </label>
+        <div class="export-buttons">
+          <button class="export-btn" onclick="executeExport()">导出</button>
+        </div>
+      </div>
+
+      <div class="arena-groups">
+        <h3>SAVED GROUPS</h3>
+        <div id="arenaGroupsList"></div>
+      </div>
     </div>
   </div>
 
@@ -537,13 +671,17 @@
           weather: {
             label: '气象现象',
             options: [
-              { name: '酸雨季', desc: '周期性的腐蚀性降雨' },
+              { name: '酸雨季', desc: '周期性腐蚀性降雨' },
               { name: '磁暴风暴', desc: '电磁场剧烈扰动' },
-              { name: '永恒晨曦', desc: '行星一面永远朝向恒星' },
-              { name: '毒雾弥漫', desc: '有毒气体笼罩的时期' },
-              { name: '晶体沉降', desc: '大气中结晶物质下落' },
-              { name: '电磁脉冲', desc: '周期性EMP现象' },
-              { name: '🎲 随机', desc: '【Fill in 气象现象的随机变量，如极端气候、季节异常（仅作参考）】' }
+              { name: '化学雾', desc: '化学物质悬浮大气中' },
+              { name: '晶体沉降', desc: '结晶物质从大气中析出' },
+              { name: '永冻层', desc: '极寒冻土长年不化' },
+              { name: '冻雨锋面', desc: '冰冻降水与气流交汇' },
+              { name: '尘暴', desc: '干燥地区的风沙现象' },
+              { name: '类地气象', desc: '类似地球的基础气候现象' },
+              { name: '光学异常', desc: '大气折射引发的光学现象' },
+              { name: '压力异常', desc: '气压波动引发的环境变化' },
+              { name: '🎲 随机', desc: '【Fill in 气象现象的随机变量（仅作参考）】' }
             ]
           }
         }
@@ -1010,9 +1148,15 @@
         selections[catKey] = {};
         Object.keys(worldData[catKey].subs).forEach(subKey => {
           const opts = worldData[catKey].subs[subKey].options;
-          // Pick random non-placeholder option
+          const randomOpt = opts.find(o => o.name.startsWith('🎲'));
           const nonRandomOpts = opts.filter(o => !o.name.startsWith('🎲'));
-          selections[catKey][subKey] = nonRandomOpts[Math.floor(Math.random() * nonRandomOpts.length)];
+
+          // 10% chance to pick random placeholder
+          if (randomOpt && Math.random() < 0.1) {
+            selections[catKey][subKey] = randomOpt;
+          } else {
+            selections[catKey][subKey] = nonRandomOpts[Math.floor(Math.random() * nonRandomOpts.length)];
+          }
         });
         renderSelections(catKey);
       });
@@ -1147,12 +1291,175 @@ ${configText}`;
         output.classList.remove('loading');
         output.textContent = narrative;
 
+        // Store current export data
+        currentExportData = {
+          name: '',
+          introduction: '',
+          worldview: narrative,
+          composition: configText
+        };
+
+        // Show export options
+        showExportOptions();
+
       } catch (error) {
         output.classList.remove('loading');
         output.textContent = `Error: ${error.message}`;
       } finally {
         btn.disabled = false;
       }
+    }
+
+    // Arena functions
+    let currentExportData = null;
+    let arenaGroups = JSON.parse(localStorage.getItem('arenaGroups') || '[]');
+
+    function showExportOptions() {
+      const exportDiv = document.getElementById('exportOptions');
+      const preview = document.getElementById('currentExportPreview');
+      if (currentExportData) {
+        preview.textContent = JSON.stringify(currentExportData, null, 2);
+      }
+      exportDiv.classList.add('show');
+    }
+
+    function hideExportOptions() {
+      document.getElementById('exportOptions').classList.remove('show');
+      currentExportData = null;
+      document.getElementById('exportToArena').checked = false;
+      document.getElementById('exportToJson').checked = false;
+    }
+
+    function executeExport() {
+      if (!currentExportData) return;
+
+      const toArena = document.getElementById('exportToArena').checked;
+      const toJson = document.getElementById('exportToJson').checked;
+
+      if (toArena) {
+        saveToArena();
+      }
+
+      if (toJson) {
+        downloadJson(currentExportData);
+      }
+
+      hideExportOptions();
+    }
+
+    function getCurrentComposition() {
+      let lines = [];
+      Object.keys(worldData).forEach(catKey => {
+        const cat = worldData[catKey];
+        const catSels = selections[catKey];
+        if (catSels && Object.keys(catSels).some(k => catSels[k])) {
+          lines.push(`━━━ ${cat.icon} ${cat.title} ━━━`);
+          Object.keys(cat.subs).forEach(subKey => {
+            const sel = catSels[subKey];
+            if (sel) {
+              lines.push(`[${cat.subs[subKey].label}]`);
+              lines.push(`  ${sel.name} — ${sel.desc}`);
+            }
+          });
+          lines.push('');
+        }
+      });
+      return lines.join('\n');
+    }
+
+    function saveToArena() {
+      const name = document.getElementById('arenaName').value.trim();
+      const introduction = document.getElementById('arenaIntro').value.trim();
+      const worldview = document.getElementById('arenaWorldview').value.trim();
+      const composition = document.getElementById('arenaComposition').value.trim();
+
+      if (!name) {
+        alert('请输入族群名称');
+        return;
+      }
+
+      const group = {
+        id: Date.now(),
+        name: name,
+        introduction: introduction,
+        worldview: worldview,
+        composition: composition
+      };
+
+      arenaGroups.push(group);
+      localStorage.setItem('arenaGroups', JSON.stringify(arenaGroups));
+      renderArenaGroups();
+
+      // Clear inputs
+      document.getElementById('arenaName').value = '';
+      document.getElementById('arenaIntro').value = '';
+      document.getElementById('arenaWorldview').value = '';
+      document.getElementById('arenaComposition').value = '';
+
+      alert('已保存到 Arena');
+    }
+
+    function downloadJson(data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `world_group_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importArenaGroup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.name) {
+            document.getElementById('arenaName').value = data.name || '';
+            document.getElementById('arenaIntro').value = data.introduction || '';
+            document.getElementById('arenaWorldview').value = data.worldview || '';
+            document.getElementById('arenaComposition').value = data.composition || '';
+          } else {
+            alert('无效的 JSON 格式');
+          }
+        } catch (err) {
+          alert('JSON 解析错误');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function loadGroupToArena(group) {
+      document.getElementById('arenaName').value = group.name || '';
+      document.getElementById('arenaIntro').value = group.introduction || '';
+      document.getElementById('arenaWorldview').value = group.worldview || '';
+      document.getElementById('arenaComposition').value = group.composition || '';
+    }
+
+    function deleteArenaGroup(id) {
+      arenaGroups = arenaGroups.filter(g => g.id !== id);
+      localStorage.setItem('arenaGroups', JSON.stringify(arenaGroups));
+      renderArenaGroups();
+    }
+
+    function renderArenaGroups() {
+      const list = document.getElementById('arenaGroupsList');
+      if (arenaGroups.length === 0) {
+        list.innerHTML = '<p style="opacity:0.4;font-size:calc(9px * 1.2)">暂无保存的族群</p>';
+        return;
+      }
+
+      list.innerHTML = arenaGroups.map(g => `
+        <div class="arena-group-item" onclick="loadGroupToArena(${JSON.stringify(g).replace(/"/g, '&quot;')})">
+          <h4>${g.name}</h4>
+          <p>${(g.introduction || '').substring(0, 100)}${(g.introduction || '').length > 100 ? '...' : ''}</p>
+          <button onclick="event.stopPropagation(); deleteArenaGroup(${g.id})" style="margin-top:5px;padding:4px 8px;font-size:9px;border:var(--border);background:var(--black);color:var(--white);cursor:pointer">DELETE</button>
+        </div>
+      `).join('');
     }
 
     init();
