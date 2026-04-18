@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --black: #fff;
+      --black: #FAF9F5;
       --white: #000;
       --border: 1px solid #000;
       --color-1: rgba(0, 0, 0, 0.12);
@@ -15,6 +15,8 @@
       --color-3: rgba(0, 0, 0, 0.06);
       --color-4: rgba(0, 0, 0, 0.1);
       --color-5: rgba(0, 0, 0, 0.07);
+      --fluid-blur: 80px;
+      --noise-intensity: 0.03;
     }
 
     * {
@@ -29,18 +31,6 @@
       font-family: 'DM Mono', monospace;
       min-height: 100vh;
       padding: 40px;
-    }
-
-.noise-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: var(--noise-intensity);
-      pointer-events: none;
-      filter: contrast(150%) brightness(1000%);
-      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
     .container {
@@ -124,7 +114,7 @@
     }
 
     .expand-icon {
-      font-size: 10px;
+      font-size: 12px;
       transition: transform 0.2s;
     }
 
@@ -183,7 +173,7 @@
     }
 
     .sel-title {
-      font-size: calc(9px * 1.2);
+      font-size: 12px;
       letter-spacing: 2px;
       margin-bottom: 15px;
       opacity: 0.5;
@@ -216,7 +206,7 @@
     }
 
     .sel-label {
-      font-size: calc(9px * 1.2);
+      font-size: 12px;
       letter-spacing: 2px;
       opacity: 0.5;
       display: block;
@@ -339,183 +329,156 @@
     }
 
     .narrative-output:empty::before {
-      content: 'Generated narrative will appear here...';
+      content: '生成的叙事将在此显示...';
       opacity: 0.4;
     }
 
     .model-hint {
-      font-size: calc(9px * 1.2);
+      font-size: 12px;
       opacity: 0.5;
       margin-bottom: 10px;
     }
 
-    .arena-section {
-      margin-top: 40px;
-      border-top: var(--border);
-      padding-top: 20px;
+    .preview-section {
+      margin-top: 20px;
+      border: var(--border);
+      padding: 20px;
     }
 
-    .arena-header {
+    .preview-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      border-bottom: var(--border);
+      padding-bottom: 15px;
+      margin-bottom: 15px;
     }
 
-    .arena-header h2 {
-      font-size: calc(14px * 1.2);
+    .preview-header h2 {
+      font-size: calc(12px * 1.2);
+      letter-spacing: 3px;
       font-weight: 500;
     }
 
-    .arena-import-btn {
-      padding: 8px 16px;
-      border: var(--border);
+    #generatePreview {
       background: var(--black);
       color: var(--white);
+      border: var(--border);
+      padding: 10px 20px;
       font-family: inherit;
       font-size: calc(10px * 1.2);
+      letter-spacing: 2px;
       cursor: pointer;
+      transition: all 0.1s;
     }
 
-    .arena-import-btn:hover {
-      background: var(--color-4);
+    #generatePreview:hover {
+      background: var(--white);
+      color: var(--black);
     }
 
-    .arena-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .arena-input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .arena-input-group label {
-      font-size: calc(9px * 1.2);
-      opacity: 0.6;
-    }
-
-    .arena-input-group input,
-    .arena-input-group textarea {
-      border: var(--border);
-      background: var(--black);
-      color: var(--white);
-      font-family: inherit;
-      font-size: calc(10px * 1.2);
-      padding: 8px 12px;
-    }
-
-    .arena-input-group textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    .arena-groups {
-      margin-top: 20px;
-      border-top: var(--border);
-      padding-top: 15px;
-    }
-
-    .arena-groups h3 {
-      font-size: calc(11px * 1.2);
-      margin-bottom: 10px;
-      opacity: 0.7;
-    }
-
-    .arena-group-item {
-      border: var(--border);
-      padding: 10px;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-
-    .arena-group-item:hover {
-      background: var(--color-1);
-    }
-
-    .arena-group-item h4 {
-      font-size: calc(11px * 1.2);
-      margin-bottom: 5px;
-    }
-
-    .arena-group-item p {
-      font-size: calc(9px * 1.2);
-      opacity: 0.6;
-      white-space: pre-wrap;
-    }
-
-    .export-options {
-      margin-top: 15px;
-      padding: 15px;
-      border: var(--border);
-      display: none;
-    }
-
-    .export-options.show {
-      display: block;
-    }
-
-    .export-options h3 {
-      font-size: calc(11px * 1.2);
-      margin-bottom: 10px;
-    }
-
-    .export-checkbox {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-      font-size: calc(10px * 1.2);
-    }
-
-    .export-checkbox input {
-      width: 16px;
-      height: 16px;
-    }
-
-    .export-buttons {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-    }
-
-    .export-btn {
-      padding: 8px 16px;
-      border: var(--border);
-      background: var(--black);
-      color: var(--white);
-      font-family: inherit;
-      font-size: calc(10px * 1.2);
-      cursor: pointer;
-    }
-
-    .export-btn:hover {
-      background: var(--color-4);
-    }
-
-    .export-btn:disabled {
+    #generatePreview:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
 
-    .current-export {
-      margin-bottom: 15px;
-      padding: 10px;
-      border: var(--border);
-      font-size: calc(9px * 1.2);
-      white-space: pre-wrap;
-      max-height: 150px;
-      overflow-y: auto;
+    .preview-body {
+      display: flex;
+      gap: 20px;
     }
 
-    .current-export-label {
-      font-size: calc(9px * 1.2);
-      opacity: 0.6;
-      margin-bottom: 5px;
+    .preview-left {
+      flex: 7;
+      min-width: 0;
+    }
+
+    .preview-right {
+      flex: 3;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .preview-output {
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .preview-output:empty::before {
+      content: '世界预览...';
+      opacity: 0.4;
+      font-size: calc(11px * 1.2);
+    }
+
+    .preview-output img {
+      max-width: 100%;
+      border: var(--border);
+    }
+
+    .preview-prompt-display {
+      font-size: 12px;
+      opacity: 0.5;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      border-top: var(--border);
+      padding-top: 10px;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .race-portrait {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      border: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: rgba(0,0,0,0.02);
+    }
+
+    .race-portrait:empty::before {
+      content: '族群肖像...';
+      opacity: 0.4;
+      font-size: calc(10px * 1.2);
+    }
+
+    .race-portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .race-info {
+      font-size: calc(10px * 1.2);
+      line-height: 1.7;
+    }
+
+    .race-name {
+      font-size: calc(12px * 1.2);
+      letter-spacing: 2px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .race-desc {
+      opacity: 0.7;
+      font-size: calc(10px * 1.2);
+      line-height: 1.7;
+    }
+
+    .race-prompt-display {
+      font-size: 12px;
+      opacity: 0.4;
+      line-height: 1.5;
+      border-top: var(--border);
+      padding-top: 8px;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -532,7 +495,7 @@
     <div class="categories" id="categories"></div>
 
     <div class="export-area">
-      <textarea id="exportText" readonly placeholder="SELECT OR GENERATE TO SEE OUTPUT"></textarea>
+      <textarea id="exportText" readonly placeholder="选择或生成后显示输出"></textarea>
       <button class="copy-btn" onclick="copyExport()">COPY TEXT</button>
     </div>
 
@@ -540,70 +503,144 @@
       <div class="narrative-header">
         <h2>NARRATIVE</h2>
         <div class="narrative-settings">
-          <input type="password" id="apiKey" placeholder="MiniMax API Key" />
-          <select id="modelId" style="border: var(--border); padding: 8px 12px; font-family: inherit; font-size: calc(10px * 1.2); width: 180px; background: var(--black); color: var(--white);">
-            <option value="MiniMax-M2.7">MiniMax-M2.7</option>
-            <option value="MiniMax-M2">MiniMax-M2</option>
-            <option value="abab6.5s">abab6.5s</option>
-            <option value="abab6.5">abab6.5</option>
+          <select id="providerSelect" onchange="onProviderChange()" style="border: var(--border); padding: 8px 12px; font-family: inherit; font-size: calc(10px * 1.2); background: var(--black); color: var(--white);">
+            <option value="openrouter">OpenRouter</option>
+            <option value="minimax">MiniMax</option>
           </select>
+          <input type="password" id="apiKey" placeholder="OpenRouter API Key" />
+          <input type="text" id="groupId" placeholder="GroupId" style="border: var(--border); padding: 8px 12px; font-family: inherit; font-size: calc(10px * 1.2); background: var(--white); color: var(--black); width: 120px; display: none;" />
+          <select id="modelId" style="border: var(--border); padding: 8px 12px; font-family: inherit; font-size: calc(10px * 1.2); width: 200px; background: var(--black); color: var(--white);"></select>
           <button id="generateNarrative" onclick="generateNarrative()">GENERATE NARRATIVE</button>
         </div>
       </div>
-            <div id="narrativeOutput" class="narrative-output"></div>
+      <div id="narrativeStatus" style="font-size: 12px; opacity: 0.5; margin-bottom: 8px;"></div>
+      <div id="narrativeOutput" class="narrative-output"></div>
     </div>
 
-    <div class="arena-section">
-      <div class="arena-header">
-        <h2>ARENA</h2>
-        <button class="arena-import-btn" onclick="document.getElementById('arenaFileInput').click()">IMPORT JSON</button>
-        <input type="file" id="arenaFileInput" accept=".json" style="display:none" onchange="importArenaGroup(event)">
-      </div>
-      <div class="arena-inputs">
-        <div class="arena-input-group">
-          <label>族群名称</label>
-          <input type="text" id="arenaName" placeholder="输入族群名称">
-        </div>
-        <div class="arena-input-group">
-          <label>族群介绍</label>
-          <textarea id="arenaIntro" placeholder="输入族群介绍"></textarea>
-        </div>
-        <div class="arena-input-group">
-          <label>世界观内容 (NARRATIVE)</label>
-          <textarea id="arenaWorldview" placeholder="世界观内容"></textarea>
-        </div>
-        <div class="arena-input-group">
-          <label>世界构成</label>
-          <textarea id="arenaComposition" placeholder="世界构成"></textarea>
+    <div class="preview-section">
+      <div class="preview-header">
+        <h2>WORLD PREVIEW</h2>
+        <div style="display:flex;gap:10px;">
+          <button id="generatePreview" onclick="generatePreview()">GENERATE WORLD</button>
+          <button id="generateRaceBtn" onclick="generateRace()">GENERATE RACE</button>
         </div>
       </div>
-      <button class="copy-btn" onclick="saveToArena()">SAVE TO ARENA</button>
-
-      <div class="export-options" id="exportOptions">
-        <div class="current-export-label">当前导出内容预览：</div>
-        <div class="current-export" id="currentExportPreview"></div>
-        <h3>导出选项</h3>
-        <label class="export-checkbox">
-          <input type="checkbox" id="exportToArena">
-          保存至 Arena groups
-        </label>
-        <label class="export-checkbox">
-          <input type="checkbox" id="exportToJson">
-          下载 JSON 文件
-        </label>
-        <div class="export-buttons">
-          <button class="export-btn" onclick="executeExport()">导出</button>
-        </div>
+      <div style="display:flex;gap:10px;font-size:12px;opacity:0.5;margin-bottom:8px;">
+        <span id="previewStatus" style="flex:7"></span>
+        <span id="raceStatus" style="flex:3"></span>
       </div>
-
-      <div class="arena-groups">
-        <h3>SAVED GROUPS</h3>
-        <div id="arenaGroupsList"></div>
+      <div class="preview-body">
+        <div class="preview-left">
+          <div id="previewOutput" class="preview-output"></div>
+        </div>
+        <div class="preview-right">
+          <div id="racePortrait" class="race-portrait"></div>
+          <div id="raceInfo" class="race-info"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    // ═══════ Provider Config ═══════
+    const PROVIDERS = {
+      openrouter: {
+        name: 'OpenRouter',
+        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+        models: [
+          { id: 'google/gemma-3-27b-it:free', label: 'Gemma 3 27B (Free)' },
+          { id: 'meta-llama/llama-4-maverick:free', label: 'Llama 4 Maverick (Free)' },
+          { id: 'deepseek/deepseek-chat-v3-0324:free', label: 'DeepSeek V3 (Free)' },
+          { id: 'qwen/qwen3-235b-a22b:free', label: 'Qwen3 235B (Free)' },
+        ],
+        headers: (key) => ({
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`,
+          'HTTP-Referer': location.href,
+          'X-Title': 'WorldBuild Gen'
+        })
+      },
+      minimax: {
+        name: 'MiniMax',
+        endpoint: (groupId) => groupId
+          ? `https://api.minimax.chat/v1/text/chatcompletion_v2?GroupId=${groupId}`
+          : 'https://api.minimax.chat/v1/chat/completions',
+        models: [
+          { id: 'MiniMax-M2.7', label: 'MiniMax-M2.7' },
+          { id: 'MiniMax-M2', label: 'MiniMax-M2' },
+          { id: 'abab6.5s', label: 'abab6.5s' },
+          { id: 'abab6.5', label: 'abab6.5' },
+        ],
+        headers: (key) => ({
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        }),
+        needsGroupId: true
+      }
+    };
+
+    // ═══════ Retry with exponential backoff ═══════
+    async function fetchWithRetry(url, options, maxRetries = 3) {
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const res = await fetch(url, options);
+        if (res.status === 429 && attempt < maxRetries) {
+          const retryAfter = parseInt(res.headers.get('Retry-After') || '0', 10);
+          const delay = retryAfter > 0 ? retryAfter * 1000 : Math.pow(2, attempt) * 1500;
+          setStatus(`限流中 — ${Math.round(delay / 1000)}s 后重试 (${attempt + 1}/${maxRetries})...`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        return res;
+      }
+    }
+
+    function setStatus(msg) {
+      document.getElementById('narrativeStatus').textContent = msg;
+    }
+
+    // ═══════ Provider / Model UI ═══════
+    function getProvider() {
+      return PROVIDERS[document.getElementById('providerSelect').value];
+    }
+
+    function onProviderChange() {
+      const prov = getProvider();
+      const sel = document.getElementById('modelId');
+      sel.innerHTML = prov.models.map(m => `<option value="${m.id}">${m.label}</option>`).join('');
+      document.getElementById('apiKey').placeholder = `${prov.name} API Key`;
+      document.getElementById('groupId').style.display = prov.needsGroupId ? '' : 'none';
+      // persist choice
+      localStorage.setItem('wb_provider', document.getElementById('providerSelect').value);
+    }
+
+    // ═══════ localStorage persistence ═══════
+    function loadSavedSettings() {
+      const savedProvider = localStorage.getItem('wb_provider');
+      if (savedProvider && PROVIDERS[savedProvider]) {
+        document.getElementById('providerSelect').value = savedProvider;
+      }
+      onProviderChange();
+      const savedKey = localStorage.getItem('wb_apiKey');
+      if (savedKey) document.getElementById('apiKey').value = savedKey;
+      const savedGid = localStorage.getItem('wb_groupId');
+      if (savedGid) document.getElementById('groupId').value = savedGid;
+    }
+
+    function getEndpoint(provider) {
+      if (typeof provider.endpoint === 'function') {
+        const groupId = document.getElementById('groupId').value.trim();
+        return provider.endpoint(groupId);
+      }
+      return provider.endpoint;
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('apiKey').value.trim();
+      if (key) localStorage.setItem('wb_apiKey', key);
+      const gid = document.getElementById('groupId').value.trim();
+      if (gid) localStorage.setItem('wb_groupId', gid);
+    }
+
     const worldData = {
       environment: {
         title: 'ENVIRONMENT',
@@ -1195,7 +1232,7 @@
       if (text.value) {
         text.select();
         document.execCommand('copy');
-        alert('COPIED');
+        alert('已复制');
       }
     }
 
@@ -1208,14 +1245,21 @@
       expandedCategory = null;
     }
 
+    let isGenerating = false;
+
     async function generateNarrative() {
+      if (isGenerating) return; // debounce
+
       const apiKey = document.getElementById('apiKey').value.trim();
       if (!apiKey) {
-        alert('Please enter your API Key (SiliconFlow / StepFun)');
+        alert('请输入 API Key');
         return;
       }
 
-      const model = document.getElementById('modelId').value.trim() || 'Step/step-3.5-flash';
+      saveApiKey();
+
+      const provider = getProvider();
+      const model = document.getElementById('modelId').value;
       const output = document.getElementById('narrativeOutput');
       const btn = document.getElementById('generateNarrative');
 
@@ -1238,13 +1282,13 @@
       });
 
       if (!configText.trim()) {
-        alert('Please select or generate some world elements first');
+        alert('请先选择或生成世界元素');
         return;
       }
 
       const systemPrompt = `You are a worldbuilding expert. Based on the configuration provided, generate an immersive, engaging narrative description of this world. The description should:
 
-1. Be written in Traditional Chinese (繁體中文)
+1. Be written in Simplified Chinese (简体中文)
 2. Weave together all the elements into a coherent world narrative
 3. Highlight tensions, conflicts, and unique characteristics
 4. Describe the world as if writing for a novel or game setting
@@ -1253,216 +1297,356 @@
 
 DO NOT simply list the elements. Instead, create a vivid description that shows how these elements interact and shape this world.`;
 
-      const userPrompt = `Generate a world narrative based on this configuration:
+      const userPrompt = `Generate a world narrative based on this configuration:\n\n${configText}`;
 
-${configText}`;
-
+      isGenerating = true;
       btn.disabled = true;
-      output.innerHTML = '';
+      output.textContent = '';
       output.classList.add('loading');
-      output.textContent = 'Generating...';
+      setStatus('连接中...');
+
+      const endpoint = getEndpoint(provider);
+      const isLegacy = endpoint.includes('chatcompletion_v2');
+      const useStream = !isLegacy;
 
       try {
-        // Use MiniMax API
-        const response = await fetch('https://api.minimax.io/v1/chat/completions', {
+        const reqBody = {
+          model: model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.8,
+          max_tokens: 2000,
+        };
+        if (useStream) reqBody.stream = true;
+        // Legacy MiniMax uses tokens_to_generate instead of max_tokens
+        if (isLegacy) { reqBody.tokens_to_generate = 2000; delete reqBody.max_tokens; }
+
+        const response = await fetchWithRetry(endpoint, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.8,
-            max_tokens: 1000
-          })
+          headers: provider.headers(apiKey),
+          body: JSON.stringify(reqBody)
         });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(`API Error ${response.status}: ${errorData.error?.message || response.statusText}`);
+          const msg = errorData.error?.message || errorData.base_resp?.status_msg || response.statusText;
+          if (response.status === 401) {
+            throw new Error(`Authentication failed (401): check your ${provider.name} API key. ${msg}`);
+          } else if (response.status === 429) {
+            throw new Error(`Rate limited (429): ${provider.name} quota exceeded after retries. ${msg}`);
+          }
+          throw new Error(`API Error ${response.status}: ${msg}`);
         }
 
-        const data = await response.json();
-        const narrative = data.choices[0].message.content;
         output.classList.remove('loading');
-        output.textContent = narrative;
 
-        // Store current export data
-        currentExportData = {
-          name: '',
-          introduction: '',
-          worldview: narrative,
-          composition: configText
-        };
+        if (isLegacy) {
+          // ── Legacy MiniMax (chatcompletion_v2) ──
+          setStatus('生成中...');
+          const data = await response.json();
+          if (data.base_resp?.status_code !== 0) {
+            throw new Error(`MiniMax Error: ${data.base_resp?.status_msg || 'unknown'}`);
+          }
+          const narrative = data.choices?.[0]?.message?.content || data.reply || data.choices?.[0]?.messages?.[0]?.text || data.choices?.[0]?.text || '';
+          output.textContent = narrative || '未收到内容，请尝试其他模型';
+          setStatus('');
+          if (narrative) { generatePreview(); generateRace(); }
+        } else {
+          // ── Streaming (OpenAI-compatible) ──
+          setStatus('输出中...');
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let fullText = '';
 
-        // Show export options
-        showExportOptions();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed || !trimmed.startsWith('data: ')) continue;
+              const payload = trimmed.slice(6);
+              if (payload === '[DONE]') break;
+              try {
+                const json = JSON.parse(payload);
+                const delta = json.choices?.[0]?.delta?.content;
+                if (delta) {
+                  fullText += delta;
+                  output.textContent = fullText;
+                }
+              } catch (e) { /* skip malformed chunk */ }
+            }
+          }
+
+          if (!fullText.trim()) {
+            output.textContent = '未收到内容，请尝试其他模型';
+          }
+          setStatus('');
+          if (fullText.trim()) { generatePreview(); generateRace(); }
+        }
 
       } catch (error) {
         output.classList.remove('loading');
         output.textContent = `Error: ${error.message}`;
+        setStatus('');
       } finally {
         btn.disabled = false;
+        isGenerating = false;
       }
     }
 
-    // Arena functions
-    let currentExportData = null;
-    let arenaGroups = JSON.parse(localStorage.getItem('arenaGroups') || '[]');
+    // ═══════ World Preview (Narrative → LLM translate → Pollinations) ═══════
+    let isPreviewGenerating = false;
 
-    function showExportOptions() {
-      const exportDiv = document.getElementById('exportOptions');
-      const preview = document.getElementById('currentExportPreview');
-      if (currentExportData) {
-        preview.textContent = JSON.stringify(currentExportData, null, 2);
-      }
-      exportDiv.classList.add('show');
+    function setPreviewStatus(msg) {
+      document.getElementById('previewStatus').textContent = msg;
     }
 
-    function hideExportOptions() {
-      document.getElementById('exportOptions').classList.remove('show');
-      currentExportData = null;
-      document.getElementById('exportToArena').checked = false;
-      document.getElementById('exportToJson').checked = false;
-    }
+    async function generatePreview() {
+      if (isPreviewGenerating) return;
 
-    function executeExport() {
-      if (!currentExportData) return;
-
-      const toArena = document.getElementById('exportToArena').checked;
-      const toJson = document.getElementById('exportToJson').checked;
-
-      if (toArena) {
-        saveToArena();
-      }
-
-      if (toJson) {
-        downloadJson(currentExportData);
-      }
-
-      hideExportOptions();
-    }
-
-    function getCurrentComposition() {
-      let lines = [];
-      Object.keys(worldData).forEach(catKey => {
-        const cat = worldData[catKey];
-        const catSels = selections[catKey];
-        if (catSels && Object.keys(catSels).some(k => catSels[k])) {
-          lines.push(`━━━ ${cat.icon} ${cat.title} ━━━`);
-          Object.keys(cat.subs).forEach(subKey => {
-            const sel = catSels[subKey];
-            if (sel) {
-              lines.push(`[${cat.subs[subKey].label}]`);
-              lines.push(`  ${sel.name} — ${sel.desc}`);
-            }
-          });
-          lines.push('');
-        }
-      });
-      return lines.join('\n');
-    }
-
-    function saveToArena() {
-      const name = document.getElementById('arenaName').value.trim();
-      const introduction = document.getElementById('arenaIntro').value.trim();
-      const worldview = document.getElementById('arenaWorldview').value.trim();
-      const composition = document.getElementById('arenaComposition').value.trim();
-
-      if (!name) {
-        alert('请输入族群名称');
+      const narrativeText = document.getElementById('narrativeOutput').textContent.trim();
+      if (!narrativeText || narrativeText.startsWith('Error:')) {
+        alert('请先生成叙事文本');
         return;
       }
 
-      const group = {
-        id: Date.now(),
-        name: name,
-        introduction: introduction,
-        worldview: worldview,
-        composition: composition
-      };
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) { alert('请先输入 API Key'); return; }
 
-      arenaGroups.push(group);
-      localStorage.setItem('arenaGroups', JSON.stringify(arenaGroups));
-      renderArenaGroups();
+      const provider = getProvider();
+      const model = document.getElementById('modelId').value;
+      const output = document.getElementById('previewOutput');
+      const btn = document.getElementById('generatePreview');
 
-      // Clear inputs
-      document.getElementById('arenaName').value = '';
-      document.getElementById('arenaIntro').value = '';
-      document.getElementById('arenaWorldview').value = '';
-      document.getElementById('arenaComposition').value = '';
+      isPreviewGenerating = true;
+      btn.disabled = true;
+      output.innerHTML = '';
+      setPreviewStatus('1/2 — 翻译场景描述...');
 
-      alert('已保存到 Arena');
+      try {
+        // Step 1: LLM translate narrative → English scene prompt
+        const translatePrompt = `Convert the following world narrative into a single concise English image generation prompt (under 100 words). Focus on: landscape, architecture, lighting, atmosphere, color palette, key visual elements. Use vivid, concrete visual language. Output ONLY the prompt, nothing else.
+
+Narrative:
+${narrativeText}`;
+
+        const ep = getEndpoint(provider);
+        const isLeg = ep.includes('chatcompletion_v2');
+        const body = { model, messages: [{ role: 'user', content: translatePrompt }], temperature: 0.8 };
+        if (isLeg) { body.tokens_to_generate = 250; } else { body.max_tokens = 250; }
+
+        const res = await fetchWithRetry(ep, {
+          method: 'POST',
+          headers: provider.headers(apiKey),
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(`LLM Error ${res.status}: ${err.error?.message || err.base_resp?.status_msg || res.statusText}`);
+        }
+
+        const data = await res.json();
+        if (isLeg && data.base_resp?.status_code !== 0) {
+          throw new Error(`MiniMax Error: ${data.base_resp?.status_msg || 'unknown'}`);
+        }
+        // Try every known response path
+        const scenePrompt = (
+          data.choices?.[0]?.message?.content ||   // OpenAI-compatible
+          data.reply ||                             // legacy .reply
+          data.choices?.[0]?.messages?.[0]?.text || // legacy .messages[].text
+          data.choices?.[0]?.text ||                // fallback
+          data.output?.text ||                      // fallback
+          ''
+        ).trim();
+
+        if (!scenePrompt) {
+          console.warn('Preview: empty scene prompt. Raw response:', JSON.stringify(data));
+          throw new Error('LLM 返回空场景描述，按 F12 查看原始响应');
+        }
+
+        // Step 2: Pollinations.ai
+        setPreviewStatus('2/2 — 生成图片...');
+
+        const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(scenePrompt)}?width=896&height=512&nologo=true&seed=${Date.now()}`;
+        const img = new Image();
+        img.alt = 'World Preview';
+        img.style.maxWidth = '100%';
+        img.style.border = 'var(--border)';
+
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => reject(new Error('图片生成失败'));
+          img.src = imgUrl;
+        });
+
+        output.innerHTML = '';
+        output.appendChild(img);
+        const pd = document.createElement('div');
+        pd.className = 'preview-prompt-display';
+        pd.textContent = `Scene prompt: ${scenePrompt}`;
+        output.appendChild(pd);
+        setPreviewStatus('');
+
+      } catch (error) {
+        output.innerHTML = `<span style="opacity:0.6">Error: ${error.message}</span>`;
+        setPreviewStatus('');
+      } finally {
+        btn.disabled = false;
+        isPreviewGenerating = false;
+      }
     }
 
-    function downloadJson(data) {
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `world_group_${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+    // ═══════ Race Generator ═══════
+    const RACE_LAYERS = {
+      body: { label: '本体（体态/生理/外貌）', keys: [['xvariable','type'], ['environment','ecology'], ['environment','habitat']] },
+      culture: { label: '服饰/行为/民俗', keys: [['religion','belief'], ['actors','organization'], ['technology','specialty'], ['environment','habitat']] },
+      social: { label: '社会组织', keys: [['politics','system']] },
+    };
+
+    let isRaceGenerating = false;
+
+    function setRaceStatus(msg) {
+      document.getElementById('raceStatus').textContent = msg;
     }
 
-    function importArenaGroup(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.name) {
-            document.getElementById('arenaName').value = data.name || '';
-            document.getElementById('arenaIntro').value = data.introduction || '';
-            document.getElementById('arenaWorldview').value = data.worldview || '';
-            document.getElementById('arenaComposition').value = data.composition || '';
-          } else {
-            alert('无效的 JSON 格式');
+    function collectRaceContext() {
+      let sections = [];
+      let hasAny = false;
+      for (const [layer, cfg] of Object.entries(RACE_LAYERS)) {
+        let lines = [];
+        const seen = new Set();
+        for (const [cat, sub] of cfg.keys) {
+          const sel = selections[cat]?.[sub];
+          const uid = `${cat}.${sub}`;
+          if (sel && !seen.has(uid)) {
+            seen.add(uid);
+            lines.push(`  ${worldData[cat].subs[sub].label}: ${sel.name} — ${sel.desc}`);
           }
-        } catch (err) {
-          alert('JSON 解析错误');
         }
-      };
-      reader.readAsText(file);
-      event.target.value = '';
-    }
-
-    function loadGroupToArena(group) {
-      document.getElementById('arenaName').value = group.name || '';
-      document.getElementById('arenaIntro').value = group.introduction || '';
-      document.getElementById('arenaWorldview').value = group.worldview || '';
-      document.getElementById('arenaComposition').value = group.composition || '';
-    }
-
-    function deleteArenaGroup(id) {
-      arenaGroups = arenaGroups.filter(g => g.id !== id);
-      localStorage.setItem('arenaGroups', JSON.stringify(arenaGroups));
-      renderArenaGroups();
-    }
-
-    function renderArenaGroups() {
-      const list = document.getElementById('arenaGroupsList');
-      if (arenaGroups.length === 0) {
-        list.innerHTML = '<p style="opacity:0.4;font-size:calc(9px * 1.2)">暂无保存的族群</p>';
-        return;
+        if (lines.length) {
+          hasAny = true;
+          sections.push(`[${cfg.label}]\n${lines.join('\n')}`);
+        }
       }
+      return hasAny ? sections.join('\n\n') : '';
+    }
 
-      list.innerHTML = arenaGroups.map(g => `
-        <div class="arena-group-item" onclick="loadGroupToArena(${JSON.stringify(g).replace(/"/g, '&quot;')})">
-          <h4>${g.name}</h4>
-          <p>${(g.introduction || '').substring(0, 100)}${(g.introduction || '').length > 100 ? '...' : ''}</p>
-          <button onclick="event.stopPropagation(); deleteArenaGroup(${g.id})" style="margin-top:5px;padding:4px 8px;font-size:9px;border:var(--border);background:var(--black);color:var(--white);cursor:pointer">DELETE</button>
-        </div>
-      `).join('');
+    async function generateRace() {
+      if (isRaceGenerating) return;
+
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) { alert('请先输入 API Key'); return; }
+
+      const raceCtx = collectRaceContext();
+      if (!raceCtx) { alert('请先选择或生成世界元素'); return; }
+
+      const provider = getProvider();
+      const model = document.getElementById('modelId').value;
+      const portrait = document.getElementById('racePortrait');
+      const info = document.getElementById('raceInfo');
+      const btn = document.getElementById('generateRaceBtn');
+
+      isRaceGenerating = true;
+      btn.disabled = true;
+      portrait.innerHTML = '';
+      info.innerHTML = '';
+      setRaceStatus('生成族群...');
+
+      try {
+        const prompt = `You are a sci-fi/fantasy creature designer. Create a unique species based on the layered world elements below. Each layer determines a specific aspect:
+
+${raceCtx}
+
+Rules:
+- 「本体」决定生理结构：X变量如RNA不稳定性→肢体变异/再生能力；生态如深海热泉→耐高温皮肤/生物发光；栖息地如地下→大眼无色素
+- 「服饰/行为/民俗」决定穿着与习惯：信仰→仪式纹饰/禁忌配色；组织→阶级徽章/制服；技术→植入物/工具配件；栖息地→材质选择
+- 「社会组织」决定群体行为：蜂群意识→动作同步/个体无表情；无政府→装扮混乱多样；极权→整齐划一
+
+Output STRICTLY valid JSON, no markdown fences:
+{"name":"族群名称（简中2-4字）","description":"简中150字，分三段：外貌体态 / 服饰行为 / 社会特征","portrait_prompt":"English under 80 words. Single representative member: anatomy, skin, eyes per 本体; clothing, accessories, markings per 服饰; posture, expression per 社会. Cinematic concept art."}`;
+
+        const ep = getEndpoint(provider);
+        const isLeg = ep.includes('chatcompletion_v2');
+        const body = { model, messages: [{ role: 'user', content: prompt }], temperature: 0.85 };
+        if (isLeg) { body.tokens_to_generate = 600; } else { body.max_tokens = 600; }
+
+        const res = await fetchWithRetry(ep, {
+          method: 'POST',
+          headers: provider.headers(apiKey),
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(`LLM ${res.status}: ${err.error?.message || err.base_resp?.status_msg || res.statusText}`);
+        }
+
+        const data = await res.json();
+        if (isLeg && data.base_resp?.status_code !== 0) {
+          throw new Error(`MiniMax: ${data.base_resp?.status_msg || 'unknown'}`);
+        }
+
+        const raw = (
+          data.choices?.[0]?.message?.content ||
+          data.reply ||
+          data.choices?.[0]?.messages?.[0]?.text ||
+          ''
+        ).trim();
+
+        // Extract JSON from response (handle markdown fences)
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          console.warn('Race: cannot parse JSON from:', raw);
+          throw new Error('LLM 未返回有效 JSON');
+        }
+
+        const race = JSON.parse(jsonMatch[0]);
+        if (!race.name || !race.portrait_prompt) {
+          throw new Error('响应缺少 name 或 portrait_prompt');
+        }
+
+        // Display text info
+        info.innerHTML = `<div class="race-name">${race.name}</div><div class="race-desc">${race.description || ''}</div>`;
+
+        // Generate portrait
+        setRaceStatus('生成肖像...');
+        const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(race.portrait_prompt)}?width=576&height=768&nologo=true&seed=${Date.now()}`;
+
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => reject(new Error('肖像生成失败'));
+          img.src = imgUrl;
+        });
+
+        portrait.innerHTML = '';
+        portrait.appendChild(img);
+
+        // Append prompt below info
+        info.innerHTML += `<div class="race-prompt-display">${race.portrait_prompt}</div>`;
+        setRaceStatus('');
+
+      } catch (error) {
+        portrait.innerHTML = `<span style="opacity:0.4;font-size:12px">Error</span>`;
+        info.innerHTML = `<span style="opacity:0.6;font-size:calc(10px*1.2)">${error.message}</span>`;
+        setRaceStatus('');
+      } finally {
+        btn.disabled = false;
+        isRaceGenerating = false;
+      }
     }
 
     init();
+    loadSavedSettings();
   </script>
 </body>
 </html>
