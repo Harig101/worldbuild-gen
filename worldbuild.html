@@ -590,15 +590,8 @@
     <div class="categories" id="categories"></div>
 
     <div class="export-area">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-        <input type="text" id="raceName" placeholder="种族名称" style="border:var(--border);padding:8px 12px;font-family:inherit;font-size:calc(10px * 1.2);background:var(--black);color:var(--white);">
-        <input type="text" id="raceDesc" placeholder="种族描述" style="border:var(--border);padding:8px 12px;font-family:inherit;font-size:calc(10px * 1.2);background:var(--black);color:var(--white);">
-      </div>
       <textarea id="exportText" readonly placeholder="选择或生成后显示输出"></textarea>
-      <div style="display:flex;gap:10px;margin-top:10px;">
-        <button class="copy-btn" onclick="copyExport()">COPY TEXT</button>
-        <button class="copy-btn" onclick="exportJSON()">导出 JSON</button>
-      </div>
+      <button class="copy-btn" onclick="copyExport()">COPY TEXT</button>
     </div>
 
     <div class="narrative-section">
@@ -642,6 +635,23 @@
       </div>
     </div>
   </div>
+
+    <div class="json-export-section" style="margin-top:40px;border-top:var(--border);padding-top:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <h2 style="font-size:14px;font-weight:500;">JSON EXPORT</h2>
+        <button onclick="exportJSON()" style="background:var(--black);color:var(--white);border:var(--border);padding:10px 20px;font-family:inherit;font-size:12px;cursor:pointer;">导出 JSON</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <input type="text" id="raceName" placeholder="种族名称" oninput="updateJSONPreview()" style="border:var(--border);padding:8px 12px;font-family:inherit;font-size:calc(10px * 1.2);background:var(--black);color:var(--white);">
+        <input type="text" id="raceDesc" placeholder="种族描述" oninput="updateJSONPreview()" style="border:var(--border);padding:8px 12px;font-family:inherit;font-size:calc(10px * 1.2);background:var(--black);color:var(--white);">
+      </div>
+      <pre id="jsonPreview" style="border:var(--border);padding:15px;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:var(--black);color:var(--white);font-family:inherit;">{
+  "种族名称": "",
+  "种族描述": "",
+  "NARRATIVE": "",
+  "世界组成": ""
+}</pre>
+    </div>
 
   <script>
     // ═══════ Provider Config ═══════
@@ -1477,6 +1487,7 @@ DO NOT simply list the elements. Instead, create a vivid description that shows 
           }
           const narrative = data.choices?.[0]?.message?.content || data.reply || data.choices?.[0]?.messages?.[0]?.text || data.choices?.[0]?.text || '';
           output.textContent = narrative || '未收到内容，请尝试其他模型';
+          updateJSONPreview();
           setStatus('');
           if (narrative) { generatePreview(); generateRace(); }
         } else {
@@ -1770,6 +1781,49 @@ Output STRICTLY valid JSON, no markdown fences:
         isRaceGenerating = false;
       }
     }
+
+    // JSON Export Section
+    function updateJSONPreview() {
+      const raceName = document.getElementById('raceName')?.value?.trim() || "";
+      const raceDesc = document.getElementById('raceDesc')?.value?.trim() || "";
+      const narrative = document.getElementById('narrativeOutput')?.textContent?.trim() || "";
+      const composition = document.getElementById('exportText')?.value || "";
+
+      const json = {
+        "种族名称": raceName || "未命名",
+        "种族描述": raceDesc || "",
+        "NARRATIVE": narrative || "",
+        "世界组成": composition || ""
+      };
+
+      document.getElementById('jsonPreview').textContent = JSON.stringify(json, null, 2);
+    }
+
+    function exportJSON() {
+      updateJSONPreview();
+      const jsonText = document.getElementById('jsonPreview').textContent;
+      if (!jsonText) return;
+
+      const blob = new Blob([jsonText], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `world_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Auto-update JSON when inputs change
+    document.addEventListener('DOMContentLoaded', () => {
+      const observer = new MutationObserver(() => {
+        updateJSONPreview();
+      });
+
+      const narrativeOutput = document.getElementById('narrativeOutput');
+      if (narrativeOutput) {
+        observer.observe(narrativeOutput, { childList: true, characterData: true, subtree: true });
+      }
+    });
 
     init();
     loadSavedSettings();
