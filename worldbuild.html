@@ -590,8 +590,15 @@
     <div class="categories" id="categories"></div>
 
     <div class="export-area">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <input type="text" id="raceName" placeholder="种族名称" style="border:var(--border);padding:8px 12px;font-family:inherit;font-size:calc(10px * 1.2);background:var(--black);color:var(--white);">
+        <input type="text" id="raceDesc" placeholder="种族描述" style="border:var(--border);padding:8px 12px;font-family:inherit;font-size:calc(10px * 1.2);background:var(--black);color:var(--white);">
+      </div>
       <textarea id="exportText" readonly placeholder="选择或生成后显示输出"></textarea>
-      <button class="copy-btn" onclick="copyExport()">COPY TEXT</button>
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <button class="copy-btn" onclick="copyExport()">COPY TEXT</button>
+        <button class="copy-btn" onclick="exportJSON()">导出 JSON</button>
+      </div>
     </div>
 
     <div class="narrative-section">
@@ -1331,12 +1338,36 @@
       }
     }
 
+    function exportJSON() {
+      const raceName = document.getElementById('raceName').value.trim();
+      const raceDesc = document.getElementById('raceDesc').value.trim();
+      const narrative = document.getElementById('narrativeOutput').textContent.trim();
+      const composition = document.getElementById('exportText').value;
+
+      const json = {
+        "种族名称": raceName || "未命名",
+        "种族描述": raceDesc || "",
+        "NARRATIVE": narrative || "",
+        "世界组成": composition || ""
+      };
+
+      const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `world_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
     function resetAll() {
       selections = {};
       document.querySelectorAll('.category').forEach(c => c.classList.remove('expanded'));
       document.querySelectorAll('.sel-grid').forEach(g => g.innerHTML = '');
       document.getElementById('exportText').value = '';
       document.getElementById('narrativeOutput').innerHTML = '';
+      document.getElementById('raceName').value = '';
+      document.getElementById('raceDesc').value = '';
       expandedCategory = null;
     }
 
