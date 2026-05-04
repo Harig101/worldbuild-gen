@@ -431,7 +431,7 @@
 
     .audio-player {
       position: fixed;
-      bottom: 20px;
+      top: 20px;
       right: 20px;
       border: 1px solid #333;
       background: #0a0a0a;
@@ -440,13 +440,57 @@
     }
 
     .audio-player audio {
-      width: 200px;
-      height: 30px;
+      display: none;
+    }
+
+    .audio-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .album-art {
+      width: 48px;
+      height: 48px;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid #333;
+      flex-shrink: 0;
     }
 
     .audio-player .radio-label {
       font-size: 12px;
       color: #666;
+      margin-bottom: 8px;
+    }
+
+    .track-selector {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .track-selector select {
+      background: #1a1a1a;
+      color: #999;
+      border: 1px solid #333;
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .track-selector button {
+      background: #333;
+      color: #999;
+      border: 1px solid #444;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .track-selector button:hover {
+      background: #444;
+    }
       margin-bottom: 8px;
     }
   </style>
@@ -493,8 +537,18 @@
 
   <div class="audio-player">
     <div class="radio-label">深夜电台 FM</div>
-    <audio id="bgAudio" controls>
-      <source src="Radiohead - No Surprises.mp3" type="audio/mpeg">
+    <div class="audio-controls">
+      <div class="album-art" style="background-image: url('LateNight_FM_Podcast_Cover.png')"></div>
+      <div class="track-selector">
+        <select id="trackSelect">
+          <option value="bgm1.mp3">bgm1.mp3 (默认)</option>
+          <option value="Radiohead - No Surprises.mp3">Radiohead - No Surprises</option>
+        </select>
+        <button id="playBtn">▶</button>
+      </div>
+    </div>
+    <audio id="bgAudio" loop>
+      <source src="bgm1.mp3" type="audio/mpeg">
     </audio>
   </div>
 
@@ -1081,6 +1135,34 @@
     let currentSection = 0;
     let currentLang = 'zh';
     let hiddenFolderUnlocked = false;
+
+    // Audio player controls
+    const bgAudio = document.getElementById('bgAudio');
+    const trackSelect = document.getElementById('trackSelect');
+    const playBtn = document.getElementById('playBtn');
+
+    function switchTrack() {
+      const selected = trackSelect.value;
+      bgAudio.src = selected;
+      bgAudio.load();
+      if (playBtn.textContent === '▶') {
+        bgAudio.play().catch(() => {});
+      }
+    }
+
+    function togglePlay() {
+      if (bgAudio.paused) {
+        bgAudio.play();
+        playBtn.textContent = '⏸';
+      } else {
+        bgAudio.pause();
+        playBtn.textContent = '▶';
+      }
+    }
+
+    trackSelect.addEventListener('change', switchTrack);
+    playBtn.addEventListener('click', togglePlay);
+    bgAudio.volume = 0.5;
 
     function unlockHiddenFolder() {
       hiddenFolderUnlocked = true;
