@@ -457,6 +457,7 @@
       background-position: center;
       border: 1px solid #333;
       flex-shrink: 0;
+      transition: background-image 0.3s;
     }
 
     .audio-player .radio-label {
@@ -1148,6 +1149,13 @@
       bgAudio.load();
       if (playBtn.textContent === '▶') {
         bgAudio.play().catch(() => {});
+      }
+      // Update album art based on track
+      const albumArt = document.querySelector('.album-art');
+      if (selected === 'Radiohead - No Surprises.mp3') {
+        albumArt.style.backgroundImage = "url('No_Surprises_Cover.jpg')";
+      } else {
+        albumArt.style.backgroundImage = "url('LateNight_FM_Podcast_Cover.png')";
       }
     }
 
