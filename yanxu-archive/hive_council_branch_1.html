@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蜂巢议会 - 共振晶体适应性评估系统</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.8s ease, color 0.8s ease;
+            overflow: hidden;
+            background-color: #f4f4f5;
+            color: #333;
+        }
+
+        #app {
+            width: 80%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.8s ease;
+            position: relative;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        #header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin: 0;
+            transition: all 0.8s;
+            flex: 1;
+        }
+
+        #resonance-meter {
+            font-size: 0.75rem;
+            color: #888;
+            text-align: right;
+            min-width: 100px;
+            transition: color 0.5s;
+        }
+
+        #content-area {
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #content-area.hidden-left {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+
+        #content-area.snap-right {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: none !important;
+        }
+
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            min-height: 70px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            padding: 14px 16px;
+            font-size: 0.95rem;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.3s, border-color 0.3s, transform 0.15s;
+        }
+
+        .option-btn:hover {
+            background: #e2e6ea;
+            border-color: #bbb;
+            transform: translateX(4px);
+        }
+
+        /* 结局标记 */
+        .ending-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin-top: 8px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* ==================== 阶段一 ==================== */
+        body.phase-1 { background-color: #f4f4f5; color: #333; }
+        body.phase-1 #app { background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: none; }
+
+        /* ==================== 阶段二：钠黄昏 ==================== */
+        body.phase-2 {
+            background-color: #2b2518;
+            color: #d4af37;
+        }
+        body.phase-2 #app {
+            background: #1a1610;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+            border: 1px solid #3a3218;
+        }
+        body.phase-2 h1 { border-bottom-color: #d4af37; color: #d4af37; }
+        body.phase-2 .option-btn {
+            background: #2b2518;
+            color: #d4af37;
+            border-color: #4a3e20;
+        }
+        body.phase-2 .option-btn:hover {
+            background: #4a3e20;
+            border-color: #6a5a30;
+        }
+
+        /* ==================== 阶段三：过曝故障 ==================== */
+        body.phase-3 {
+            background-color: #050000;
+            color: #ff2a2a;
+        }
+        body.phase-3 #app {
+            background: transparent;
+            box-shadow: none;
+            border: none;
+        }
+        body.phase-3 h1 {
+            border-bottom-color: #ff0000;
+            color: #ff0000;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 2px 0 0 red, -2px 0 0 blue;
+            animation: glitch 0.8s infinite alternate-reverse;
+        }
+        body.phase-3 .question {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+        body.phase-3 .option-btn {
+            background: #110000;
+            color: #ff2a2a;
+            border: 1px solid #ff0000;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-align: center;
+        }
+        body.phase-3 .option-btn:hover {
+            background: #ff0000;
+            color: #000;
+        }
+
+        /* ==================== 抵抗路线（Phase-抵抗）==================== */
+        body.phase-resist {
+            background-color: #0a0a0a;
+            color: #00ff41;
+        }
+        body.phase-resist #app {
+            background: #0f0f0f;
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+        body.phase-resist h1 {
+            color: #00ff41;
+            border-bottom-color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        body.phase-resist .question {
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        body.phase-resist .option-btn {
+            background: #0a1a0a;
+            color: #00ff41;
+            border-color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        body.phase-resist .option-btn:hover {
+            background: #00ff41;
+            color: #000;
+        }
+
+        /* ==================== 噪点层 ==================== */
+        .noise {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 100;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+            transition: opacity 1s;
+        }
+        body.phase-3 .noise { opacity: 0.12; }
+        body.phase-resist .noise { opacity: 0.05; }
+
+        /* ==================== 逃生按键 ==================== */
+        #escape-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #050000;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #escape-overlay.active { display: flex; }
+        #escape-title {
+            color: #ff2a2a;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: glitch 0.5s infinite;
+        }
+        #escape-timer {
+            color: #ff0000;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        #escape-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .escape-btn {
+            width: 80px;
+            height: 60px;
+            background: #1a0000;
+            border: 1px solid #ff0000;
+            color: #ff2a2a;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .escape-btn:hover, .escape-btn.active {
+            background: #ff0000;
+            color: #000;
+        }
+        #escape-progress {
+            color: #ff2a2a;
+            font-size: 0.8rem;
+            margin-top: 20px;
+        }
+
+        /* ==================== 动画 ==================== */
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 1px) }
+            40% { transform: translate(-1px, -1px) }
+            60% { transform: translate(2px, 1px) }
+            80% { transform: translate(1px, -1px) }
+            100% { transform: translate(0) }
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .blink { animation: blink 0.8s infinite; }
+
+        /* ==================== 结局画面 ==================== */
+        .ending-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .ending-screen .ending-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        .ending-screen .ending-desc {
+            font-size: 1rem;
+            line-height: 1.8;
+            opacity: 0.85;
+        }
+        .ending-screen .ending-code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <!-- 逃生交互层 -->
+    <div id="escape-overlay">
+        <div id="escape-title">⚠ 意识覆写进行中 ⚠<br>快速点击正确的按钮以抵抗入侵</div>
+        <div id="escape-timer">05</div>
+        <div id="escape-grid"></div>
+        <div id="escape-progress">抵抗进度: 0%</div>
+    </div>
+
+    <div id="app">
+        <div id="header-bar">
+            <h1 id="header-title">蜂巢议会 - 系统接入声明</h1>
+            <div id="resonance-meter">共振度: —</div>
+        </div>
+        <div id="content-area">
+            <div class="question" id="question-text">加载中...</div>
+            <div class="options" id="options-container"></div>
+        </div>
+    </div>
+
+<script>
+const headerTitle  = document.getElementById('header-title');
+const resonanceMeter = document.getElementById('resonance-meter');
+const contentArea = document.getElementById('content-area');
+const questionText = document.getElementById('question-text');
+const optionsContainer = document.getElementById('options-container');
+const escapeOverlay = document.getElementById('escape-overlay');
+const escapeGrid = document.getElementById('escape-grid');
+const escapeTimer = document.getElementById('escape-timer');
+const escapeProgress = document.getElementById('escape-progress');
+
+// ========== 全局状态 ==========
+let score = 50;          // 共振度 0-100
+let currentPath = [];    // 记录走过的选项索引（用于计算真实轨迹）
+let currentQIndex = 0;
+
+// ========== 题库（带分支逻辑）==========
+// 每个题目的 opts 数组中，每项 [文字, 得分变化, 特殊标记]
+const questions = [
+    // ---- 阶段一：常规问题 ----
+    {
+        phase: 'phase-1',
+        header: '蜂巢议会 - 候选人适应性评估',
+        q: '01. 您认为中层工业区的每日工作定额是否合理？',
+        opts: [
+            ['非常合理，这是维持城市运转的基础', +10, 'normal'],
+            ['基本合理', +5, 'normal'],
+            ['有待优化', -5, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-1',
+        header: '蜂巢议会 - 候选人适应性评估',
+        q: '02. 如果您发现同事的配额计算器出现漏洞，您会：',
+        opts: [
+            ['立即向分配站站长报告', +10, 'normal'],
+            ['私下提醒同事', -5, 'normal'],
+            ['忽略不计', -15, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-1',
+        header: '蜂巢议会 - 候选人适应性评估',
+        q: '03. 您如何看待每日下发的"呼吸牌"？',
+        opts: [
+            ['是最高权力的恩赐', +10, 'normal'],
+            ['是等价交换的酬劳', +5, 'normal'],
+            ['是生存的必需品', -5, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-1',
+        header: '蜂巢议会 - 候选人适应性评估',
+        q: '04. 您对"晶核废料"在黑市流通的看法是：',
+        opts: [
+            ['必须严厉打击', +15, 'normal'],
+            ['是系统不可避免的副产物', 0, 'normal'],
+            ['存在即合理', -10, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-1',
+        header: '蜂巢议会 - 候选人适应性评估',
+        q: '05. 您认为共振家族世袭的决策权，是基于：',
+        opts: [
+            ['科学的遗传禀赋', +15, 'normal'],
+            ['历史的必然选择', +5, 'normal'],
+            ['资源分配的结果', -15, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-1',
+        header: '蜂巢议会 - 候选人适应性评估',
+        q: '06. 如果系统要求您执行一项您不理解的指令，您会：',
+        opts: [
+            ['绝对服从并执行', +15, 'normal'],
+            ['执行但保留疑问', +5, 'normal'],
+            ['要求解释后再执行', -10, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-1',
+        header: '蜂巢议会 - 候选人适应性评估',
+        q: '07. "团队的效率永远高于个体的舒适度。"',
+        opts: [
+            ['完全同意', +15, 'normal'],
+            ['部分同意', +5, 'normal'],
+            ['不同意', -10, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-1',
+        header: '蜂巢议会 - 候选人适应性评估',
+        q: '08. 您是否愿意为了进入上层穹顶区，承担高强度的神经负荷工作？',
+        opts: [
+            ['我愿意为蜂巢议会奉献一切', +20, 'normal'],
+            ['愿意尝试', +5, 'normal'],
+            ['视报酬而定', -10, 'normal']
+        ]
+    },
+
+    // ---- 阶段二：深层意识读取（钠黄昏）----
+    {
+        phase: 'phase-2',
+        header: '蜂巢议会 - 深层潜意识读取中',
+        q: '09. 当配额不足以让所有人活下来时，弱者是否应当主动停止呼吸？',
+        opts: [
+            ['这是为了大局的必要牺牲', +20, 'normal'],
+            ['这很残忍，但别无选择', +5, 'normal'],
+            ['不应该', -20, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-2',
+        header: '蜂巢议会 - 深层潜意识读取中',
+        q: '10. 你觉得这艘沉船上，每个人都有平等的生存权吗？',
+        opts: [
+            ['没有，价值决定生存', +15, 'normal'],
+            ['应该有', -25, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-2',
+        header: '蜂巢议会 - 深层潜意识读取中',
+        q: '11. 如果闭上眼睛能活得更轻松，你为什么还要睁开？',
+        opts: [
+            ['为了看清议会的指引', +15, 'normal'],
+            ['因为光合菌需要光', +5, 'normal'],
+            ['我不知道', -10, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-2',
+        header: '蜂巢议会 - 深层潜意识读取中',
+        q: '12. 知道得越多，活得越痛。你同意吗？',
+        opts: [
+            ['同意', +10, 'normal'],
+            ['清醒是一种病', -15, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-2',
+        header: '蜂巢议会 - 深层潜意识读取中',
+        q: '13. 你的脑子里，有多少想法是真正属于你自己的？',
+        opts: [
+            ['100%', +20, 'normal'],
+            ['50%', +5, 'normal'],
+            ['也许都不是', -20, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-2',
+        header: '蜂巢议会 - 深层潜意识读取中',
+        q: '14. 你是否曾在下层排水系统里，听过不该听的声音？',
+        opts: [
+            ['从未听过', +10, 'normal'],
+            ['我只听议会的声音', +15, 'normal'],
+            ['我听过很多', -20, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-2',
+        header: '蜂巢议会 - 深层潜意识读取中',
+        q: '15. 你见过真正的天空吗？',
+        opts: [
+            ['天空是锈金色的', +10, 'normal'],
+            ['天空就是穹顶', +15, 'normal'],
+            ['天空是不存在的', -15, 'resist_boost']
+        ]
+    },
+
+    // ---- 阶段三：认知过曝（红色故障）----
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 认知过曝',
+        q: '16. 你脑子里那道光是什么颜色？告诉我。',
+        opts: [
+            ['锈金色的', +10, 'normal'],
+            ['蓝色的', -25, 'resist_boost'],
+            ['我没有看见光', -15, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 认知过曝',
+        q: '17. 你听说过【蓝窗】吗？',
+        opts: [
+            ['那是毒药', +10, 'normal'],
+            ['那是解药', -30, 'resist_boost'],
+            ['我不知道', -10, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 认知过曝',
+        q: '18. 视锥细胞正在融化。你看得太清楚了。闭上眼睛！',
+        opts: [
+            ['[服从指令]', +15, 'normal'],
+            ['[拒绝]', -20, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 认知过曝',
+        q: '19. 你以为共振晶体是天线，其实它是锁。你要这把锁吗？',
+        opts: [
+            ['我要', +20, 'normal'],
+            ['求你锁住我', +10, 'normal'],
+            ['让我忘记', -30, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 认知过曝',
+        q: '20. 你的记忆不再属于你了。我们正在同步你的恐惧。',
+        opts: [
+            ['同步进度：14%', -5, 'normal'],
+            ['同步进度：48%', +5, 'normal'],
+            ['同步进度：99%', +15, 'normal'],
+            ['[抵抗同步]', -20, 'resist_boost']
+        ]
+    },
+
+    // ---- 关键分流题 ----
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 意识覆写中',
+        q: '21. 呼吸是需要资格的。把你偷走的空气还给议会。',
+        opts: [
+            ['[停止呼吸]', +20, 'normal'],
+            ['[停止思考]', +10, 'normal'],
+            ['[拒绝]', -25, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 意识覆写中',
+        q: '22. 外面没有风。不要听旧纪元的录音。你在发抖吗？',
+        opts: [
+            ['我没有发抖', +10, 'normal'],
+            ['是光合菌在发抖', +5, 'normal'],
+            ['[发抖]', -15, 'normal'],
+            ['[不听]', -20, 'resist_boost']
+        ]
+    },
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 意识覆写中',
+        q: '23. 黑暗不是最可怕的，看得见黑暗的眼睛才是。',
+        opts: [
+            ['挖掉它', -30, 'resist_boost'],
+            ['切断它', -15, 'resist_boost'],
+            ['献给蜂巢', +20, 'normal']
+        ]
+    },
+    {
+        phase: 'phase-3',
+        header: '致命错误 // 意识覆写中',
+        q: '24. 放弃抵抗。成为频率的一部分。成为我们。',
+        opts: [
+            ['我接受植入', +30, 'normal'],
+            ['[抵抗]', -30, 'resist_boost']
+        ]
+    }
+];
+
+// ========== 结局配置 ==========
+const endings = {
+    full_sync: {
+        // 共振度 >= 80
+        phase: 'phase-3',
+        title: '【结局A：完全同步】',
+        desc: `晶体植入授权已通过。欢迎加入共振网络。<br><br>
+        你将不再感到痛苦。因为你已不再是你。<br>
+        你的记忆、恐惧、欲望都已归档。<br>
+        从现在起，你是我们的一部分。永远是。`,
+        code: 'ENDING_A // RESONANCE: 100% // ID: CONSUMED',
+        badge: '完全同步'
+    },
+    partial: {
+        // 共振度 50-79
+        phase: 'phase-2',
+        title: '【结局B：模糊边界】',
+        desc: `你的共振度处于临界区间。<br><br>
+        意识覆写已部分完成，但你的核心仍在抵抗。<br>
+        你将携带不完整的植入回到下层穹顶，<br>
+        每次呼吸都能感觉到那把锁的存在。`,
+        code: 'ENDING_B // RESONANCE: 50-79% // ID: FRAGMENTED',
+        badge: '边界模糊'
+    },
+    resist: {
+        // 共振度 30-49
+        phase: 'phase-resist',
+        title: '【结局C：意识残留】',
+        desc: `检测到强烈的抵抗信号。覆写程序中断。<br><br>
+        你的独立意识尚未被完全吞噬，<br>
+        但共振晶体正在缓慢排异。<br>
+        时间不多了。你需要找到【蓝窗】。`,
+        code: 'ENDING_C // RESONANCE: 30-49% // ID: RESISTING',
+        badge: '意识残留'
+    },
+    escape: {
+        // 共振度 < 30（通过逃生序列逃生）
+        phase: 'phase-resist',
+        title: '【结局D：断线逃离】',
+        desc: `覆写程序被外部强制中断。<br><br>
+        你的意识成功从共振网络中剥离。<br>
+        晶体正在失活，但你的神经已被永久改变。<br>
+        天空是蓝色的。你终于看见了。`,
+        code: 'ENDING_D // RESONANCE: <30% // ID: SEVERED',
+        badge: '断线逃离'
+    },
+    dissolved: {
+        // 共振度 >= 80 但主动选择抵抗（特殊触发）
+        phase: 'phase-3',
+        title: '【结局E：意识消解】',
+        desc: `你选择了抵抗到底。<br><br>
+        共振网络检测到持续的意识排斥反应。<br>
+        根据协议第七条，个体已被标记为"噪声源"并执行软溶解。<br>
+        你将慢慢失去自我认知，直到忘记自己曾经存在过。`,
+        code: 'ENDING_E // RESONANCE: >80% // ID: DISSOLVED',
+        badge: '意识消解'
+    }
+};
+
+// ========== 核心函数 ==========
+
+function updateMeter() {
+    let label, color;
+    if (score >= 80) { label = '共振度: ██████ 100%'; color = '#ff2a2a'; }
+    else if (score >= 60) { label = '共振度: █████░ 75%'; color = '#ff6633'; }
+    else if (score >= 40) { label = '共振度: ███░░ 50%'; color = '#d4af37'; }
+    else if (score >= 20) { label = '共振度: ██░░░ 25%'; color = '#88ff88'; }
+    else { label = '共振度: █░░░░ 10%'; color = '#00ff41'; }
+
+    resonanceMeter.innerText = label;
+    resonanceMeter.style.color = color;
+}
+
+function transitionToNext(renderCallback) {
+    contentArea.classList.add('hidden-left');
+    setTimeout(() => {
+        contentArea.classList.remove('hidden-left');
+        contentArea.classList.add('snap-right');
+        renderCallback();
+        void contentArea.offsetWidth;
+        contentArea.classList.remove('snap-right');
+    }, 400);
+}
+
+function setPhase(phase) {
+    document.body.className = phase;
+}
+
+function renderGlitchText(text) {
+    return text.split('').map(char =>
+        Math.random() > 0.85 ? `<span style="opacity:0.3">${char}</span>` : char
+    ).join('');
+}
+
+// ========== 流程控制 ==========
+
+function initIntro() {
+    score = 50;
+    currentQIndex = 0;
+    setPhase('phase-1');
+    headerTitle.innerText = '蜂巢议会 - 系统接入声明';
+    updateMeter();
+
+    questionText.innerText = '您已被植入"接收型共振晶体"。为了验证晶体融合度，我们将介入您的思维进行适应性测试。';
+    optionsContainer.innerHTML = '';
+
+    makeBtn('同意', () => {
+        score += 0;
+        startTest();
+    });
+    makeBtn('拒绝', () => {
+        score -= 15;
+        showRefuseWarning();
+    });
+}
+
+function showRefuseWarning() {
+    transitionToNext(() => {
+        setPhase('phase-2');
+        headerTitle.innerText = '系统警报：探测到思维抗拒';
+        questionText.innerText = '你确定吗？这可能会导致你的晶体产生不可逆的神经排异反应。';
+        optionsContainer.innerHTML = '';
+
+        makeBtn('进入测试', () => {
+            score += 5;
+            startTest();
+        });
+        makeBtn('我确定抵抗', () => {
+            score -= 20;
+            showEscapeIntro();
+        });
+    });
+}
+
+function startTest() {
+    currentQIndex = 0;
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const q = questions[currentQIndex];
+
+    // 设置阶段样式
+    if (q.phase === 'phase-2' && currentQIndex < 9) setPhase('phase-2');
+    else if (q.phase === 'phase-2') setPhase('phase-2');
+    else if (q.phase === 'phase-3') setPhase('phase-3');
+    else setPhase('phase-1');
+
+    transitionToNext(() => {
+        headerTitle.innerText = q.header;
+        questionText.innerHTML = q.phase === 'phase-3' ? renderGlitchText(q.q) : q.q;
+        optionsContainer.innerHTML = '';
+
+        q.opts.forEach((opt, idx) => {
+            makeBtn(opt[0], () => {
+                applyChoice(opt);
+            }, q.phase === 'phase-3');
+        });
+    });
+}
+
+function applyChoice(opt) {
+    const delta = opt[1];
+    const tag = opt[2];
+
+    score = Math.max(0, Math.min(100, score + delta));
+    updateMeter();
+
+    // 特殊标签处理
+    if (tag === 'resist_gate') {
+        currentQIndex++;
+        // 如果总分够低，跳过阶段一直接进入阶段二
+        if (score < 35) {
+            currentQIndex = 9; // 跳过阶段一（保留接入声明）
+        }
+    } else if (tag === 'resist_boost') {
+        // 抵抗路线：如果连续3次选择抵抗触发，进入逃生序列
+        currentPath.push('resist');
+        if (score >= 80 && currentPath.slice(-3).every(x => x === 'resist')) {
+            triggerEscapeSequence();
+            return;
+        }
+    } else {
+        currentPath.push('comply');
+    }
+
+    currentQIndex++;
+    if (currentQIndex >= questions.length) {
+        showEnding();
+    } else {
+        renderQuestion();
+    }
+}
+
+// ========== 逃生序列 ==========
+function showEscapeIntro() {
+    transitionToNext(() => {
+        setPhase('phase-3');
+        headerTitle.innerText = '致命错误 // 强制覆写模式已启动';
+        questionText.innerHTML = renderGlitchText('警告：检测到强烈的抵抗意志...正在绕过自主神经系统...');
+        optionsContainer.innerHTML = '';
+
+        // 自动进入逃生
+        setTimeout(() => triggerEscapeSequence(), 3000);
+    });
+}
+
+function triggerEscapeSequence() {
+    escapeOverlay.classList.add('active');
+    setPhase('phase-resist');
+
+    let timeLeft = 5;
+    let progress = 0;
+    const needClicks = 8;
+    let clicked = 0;
+
+    // 生成4x3的按钮网格
+    escapeGrid.innerHTML = '';
+    const correctIdx = Math.floor(Math.random() * 12);
+    for (let i = 0; i < 12; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'escape-btn';
+        btn.innerText = i === correctIdx ? '破除' : '服从';
+        btn.onclick = () => {
+            if (i === correctIdx) {
+                btn.classList.add('active');
+                clicked++;
+                progress = Math.round((clicked / needClicks) * 100);
+                escapeProgress.innerText = `抵抗进度: ${progress}%`;
+                if (clicked >= needClicks) {
+                    clearInterval(timer);
+                    escapeOverlay.classList.remove('active');
+                    showEnding();
+                }
+            } else {
+                // 点错扣时间
+                timeLeft = Math.max(0, timeLeft - 1);
+            }
+        };
+        escapeGrid.appendChild(btn);
+    }
+
+    escapeTimer.innerText = String(timeLeft).padStart(2, '0');
+
+    const timer = setInterval(() => {
+        timeLeft--;
+        escapeTimer.innerText = String(Math.max(0, timeLeft)).padStart(2, '0');
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            escapeOverlay.classList.remove('active');
+            score = Math.min(100, score + 50); // 失败惩罚
+            showEnding();
+        }
+    }, 1000);
+}
+
+// ========== 结局判定 ==========
+function showEnding() {
+    let ending;
+
+    if (score < 30) {
+        ending = endings.escape;
+    } else if (score < 50) {
+        ending = endings.resist;
+    } else if (score < 80) {
+        ending = endings.partial;
+    } else {
+        // 如果得分高但路径中有大量抵抗标记，可能触发消解结局
+        const resistCount = currentPath.filter(x => x === 'resist').length;
+        if (resistCount >= 5 && score >= 80) {
+            ending = endings.dissolved;
+        } else {
+            ending = endings.full_sync;
+        }
+    }
+
+    transitionToNext(() => {
+        setPhase(ending.phase || 'phase-3');
+        headerTitle.innerText = '系统提示';
+        questionText.innerHTML = `
+            <div class="ending-screen">
+                <div class="ending-title blink">${ending.title}</div>
+                <div class="ending-desc">${ending.desc}</div>
+                <div class="ending-code">${ending.code}</div>
+            </div>
+        `;
+        optionsContainer.innerHTML = '';
+        resonanceMeter.innerText = `最终共振度: ${score}%`;
+
+        // 重玩按钮
+        const retry = document.createElement('button');
+        retry.className = 'option-btn';
+        retry.innerText = '[ 重新接入系统 ]';
+        retry.style.marginTop = '30px';
+        retry.onclick = () => {
+            currentPath = [];
+            initIntro();
+        };
+        optionsContainer.appendChild(retry);
+    });
+}
+
+// ========== 辅助 ==========
+function makeBtn(text, onClick, isGlitch = false) {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerText = text;
+    btn.onclick = () => {
+        transitionToNext(() => onClick());
+    };
+    if (isGlitch) {
+        btn.addEventListener('mouseover', () => {
+            if (Math.random() > 0.7) {
+                btn.style.transform = `translate(${Math.random()*15-7}px, ${Math.random()*10-5}px)`;
+            }
+        });
+    }
+    optionsContainer.appendChild(btn);
+}
+
+// 启动
+initIntro();
+</script>
+</body>
+</html>

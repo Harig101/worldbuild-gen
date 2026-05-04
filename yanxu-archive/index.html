@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>湮墟 YANXU ARCHIVE</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'VT323', monospace;
+      min-height: 100vh;
+      padding: 40px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0a0a;
+      z-index: -3;
+    }
+
+    .bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.45;
+      filter: grayscale(100%);
+      z-index: -2;
+    }
+
+    .terminal-header {
+      border-bottom: 1px solid #333;
+      padding-bottom: 25px;
+      margin-bottom: 50px;
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    .terminal-header h1 {
+      font-size: 24px;
+      font-weight: normal;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+
+    .terminal-header p {
+      font-size: 14px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    .unlock-section {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px dashed #666;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .unlock-section:hover {
+      border-color: #fff;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .unlock-section .unlock-text {
+      font-size: 18px;
+      color: #888;
+      font-style: italic;
+    }
+
+    .unlock-section .unlock-subtext {
+      font-size: 12px;
+      color: #555;
+      margin-top: 8px;
+    }
+
+    .folder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 25px;
+      width: 100%;
+      max-width: 1400px;
+      padding: 20px;
+    }
+
+    .folder-card {
+      border: 1px solid #333;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .folder-card:hover {
+      border-color: #fff;
+      background: #111;
+    }
+
+    .folder-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .folder-name {
+      font-size: 16px;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .folder-meta {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1400px;
+      padding: 20px;
+    }
+
+    .image-card {
+      border: 1px solid #333;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #0a0a0a;
+    }
+
+    .image-card:hover {
+      border-color: #fff;
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      filter: grayscale(100%);
+      transition: filter 0.3s;
+    }
+
+    .image-card:hover img {
+      filter: grayscale(0%);
+    }
+
+    .image-card .card-info {
+      padding: 12px;
+      border-top: 1px solid #333;
+    }
+
+    .image-card .card-name {
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .image-card .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .image-card .action-btn {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid #444;
+      background: transparent;
+      color: #888;
+      font-family: 'VT323', monospace;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .image-card .action-btn:hover {
+      border-color: #fff;
+      color: #fff;
+      background: #111;
+    }
+
+    .viewer {
+      display: none;
+      width: 100%;
+      max-width: 1400px;
+      padding: 20px;
+      gap: 30px;
+    }
+
+    .viewer.active {
+      display: flex;
+    }
+
+    .viewer-image {
+      flex: 0 0 65%;
+      position: relative;
+    }
+
+    .viewer-image img {
+      width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border: 1px solid #333;
+    }
+
+    .viewer-narrative {
+      flex: 1;
+      padding: 30px;
+      border: 1px solid #333;
+      overflow-y: auto;
+      max-height: 80vh;
+    }
+
+    .viewer-narrative h2 {
+      font-size: 20px;
+      font-weight: normal;
+      color: #fff;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #333;
+    }
+
+    .viewer-narrative p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #ccc;
+      margin-bottom: 15px;
+    }
+
+    .viewer-narrative i {
+      color: #888;
+      font-style: italic;
+    }
+
+    /* Chapter Reader - Full screen reading mode */
+    .chapter-reader {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+      padding: 40px 20px;
+    }
+
+    .chapter-reader.active {
+      display: block;
+    }
+
+    .chapter-reader .chapter-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #333;
+    }
+
+    .chapter-reader .chapter-title {
+      font-size: 32px;
+      color: #fff;
+      margin-bottom: 10px;
+      letter-spacing: 4px;
+    }
+
+    .chapter-reader .chapter-subtitle {
+      font-size: 16px;
+      color: #666;
+    }
+
+    .chapter-reader .section-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 40px;
+      padding: 20px;
+      border: 1px solid #333;
+      background: #0a0a0a;
+    }
+
+    .chapter-reader .section-nav .nav-item {
+      padding: 8px 16px;
+      border: 1px solid #444;
+      background: transparent;
+      color: #888;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chapter-reader .section-nav .nav-item:hover {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .chapter-reader .section-nav .nav-item.active {
+      border-color: #fff;
+      color: #fff;
+      background: #222;
+    }
+
+    .chapter-reader .chapter-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .chapter-reader .lang-toggle {
+      padding: 8px 16px;
+      border: 1px solid #444;
+      background: transparent;
+      color: #888;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chapter-reader .lang-toggle:hover {
+      border-color: #fff;
+      color: #fff;
+    }
+
+    .chapter-reader .chapter-content {
+      font-size: 18px;
+      line-height: 1.8;
+      color: #bbb;
+      padding: 0 20px;
+    }
+
+    .chapter-reader .chapter-content p {
+      margin-bottom: 20px;
+      text-indent: 2em;
+    }
+
+    .chapter-reader .chapter-content .section-illustrations {
+      display: flex;
+      gap: 20px;
+      margin: 30px 0;
+      justify-content: center;
+    }
+
+    .chapter-reader .chapter-content .section-illustrations img {
+      max-width: 48%;
+      height: auto;
+      border: 1px solid #333;
+    }
+
+    .chapter-reader .chapter-content strong {
+      color: #fff;
+      font-weight: normal;
+    }
+
+    .chapter-reader .section-title {
+      font-size: 24px;
+      color: #fff;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #333;
+    }
+
+    .chapter-reader .chapter-content.en {
+      font-family: 'VT323', monospace;
+    }
+
+    .chapter-reader .chapter-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 50px;
+      padding-top: 30px;
+      border-top: 1px solid #333;
+    }
+
+    .chapter-reader .nav-btn {
+      padding: 12px 24px;
+      border: 1px solid #444;
+      background: transparent;
+      color: #888;
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chapter-reader .nav-btn:hover {
+      border-color: #fff;
+      color: #fff;
+      background: #111;
+    }
+
+    .chapter-reader .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .back-btn {
+      display: none;
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #e0e0e0;
+      font-family: 'VT323', monospace;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .back-btn:hover {
+      border-color: #fff;
+      background: #111;
+    }
+
+    .back-btn.active {
+      display: inline-block;
+    }
+
+    .audio-player {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      border: 1px solid #333;
+      background: #0a0a0a;
+      padding: 15px 20px;
+      z-index: 100;
+    }
+
+    .audio-player audio {
+      width: 200px;
+      height: 30px;
+    }
+
+    .audio-player .radio-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <video class="bg-video" autoplay muted loop playsinline>
+    <source src="assets/bg.mp4" type="video/mp4">
+  </video>
+
+  <div class="terminal-header">
+    <h1>湮墟 YANXU ARCHIVE</h1>
+    <p>WORLD ARCHIVE SYSTEM v2.4</p>
+  </div>
+
+  <button class="back-btn" id="backBtn" onclick="goBack()">← BACK</button>
+
+  <div class="folder-grid" id="folderGrid"></div>
+  <div class="image-grid" id="imageGrid"></div>
+  <div class="viewer" id="viewer">
+    <div class="viewer-image">
+      <img id="viewerImg" src="" alt="">
+    </div>
+    <div class="viewer-narrative">
+      <h2 id="viewerTitle"></h2>
+      <div id="viewerText"></div>
+    </div>
+  </div>
+
+  <div class="chapter-reader" id="chapterReader">
+    <div class="chapter-header">
+      <div class="chapter-header-row">
+        <h1 class="chapter-title" id="chapterTitle"></h1>
+        <button class="lang-toggle" id="langToggle" onclick="toggleLanguage()">EN / 中文</button>
+      </div>
+      <p class="chapter-subtitle" id="chapterSubtitle"></p>
+    </div>
+    <div class="section-nav" id="sectionNav"></div>
+    <div class="chapter-content" id="chapterContent"></div>
+    <div class="chapter-nav">
+      <button class="nav-btn" id="prevSection">← 上一章</button>
+      <button class="nav-btn" id="nextSection">下一章 →</button>
+    </div>
+  </div>
+
+  <div class="audio-player">
+    <div class="radio-label">深夜电台 FM</div>
+    <audio id="bgAudio" controls>
+      <source src="assets/深夜电台.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <script>
+    const ARCHIVE_DATA = [
+      {
+        id: 'folder-1',
+        name: '行動綱領',
+        path: 'folder1',
+        items: [
+          { file: 'Image 1.jpg', displayName: '【黨首動員】LEADER\'S ADDRESS', narrative: '地下党·党首动员讲话\nEDGE LAYER UNDERGROUND PARTY — LEADER\'S ADDRESS\n\n我们不说废话。所以我只讲三件事：我们是谁，他们在做什么，以及我们打算怎么做。\n\n一、他们建了这座塔\nCORE LAYER不是一天建成的。他们花了几代人的时间，把空气、光、水、Elevation——所有东西都标上了价格，然后告诉边缘层的人：这就是自然法则。\n但它不是。\n他们把电梯建在每一层的入口，然后告诉你"高度是特权"。他们把清洁的空气泵入核心层的大厦，然后对边缘层说"空气是商品"。他们控制了楼板、管道、电梯、广播系统，然后指着边缘层的你说：你穷，是因为你不够努力。\n这不是治理。这是系统性劫持。\n\n二、边缘层不只是地理\nEDGE LAYER不是一个地方。是一种状态。\n你住在地下还是住在云端，这不是由你决定的，是由他们决定的。他们决定哪里是核心，哪里是边缘。他们决定谁配呼吸，谁配投票，谁配向上爬。\n而我们的任务，是把这个定义权从他们手里夺回来。\n\n三、我们的纲领很简单\n第一，我们拒绝"高度即特权"这个谎言。\n高度不是特权。高度是资源，而资源应该被平等分配。\n第二，我们坚持空气和呼吸的权利。\n这不是商品。这是生命的基本条件。任何把呼吸变成交易的行为，都是对人性的攻击。\n第三，我们要求政治参与权。\n不是赐予的，是不可剥夺的。核心层的政治腐败和低效一直在忽视我们。\n第四，我们相信行动。\n组织起来，不是为了游说，是为了有能力让他们付出代价。\n\n四、我们不是恐怖分子，我们是现实主义者\n他们会叫我们叛乱者、极端分子、破坏者。他们会没收我们的宣传材料，封禁我们的频道，把我们的名字从电梯权限里删掉。\n这恰恰证明我们触碰到了他们的神经。\n我们不想要混乱。我们想要一个可以呼吸、可以参与、可以站在阳光下的世界。他们给不了，我们就自己拿。\n\n五、这不是结束，这是开始\n隧道尽头不是出口。隧道尽头是起点。\n你每一次参与、每一次行动、每一次把信息传递给身边的人，都是对这个系统的一次侵蚀。\n记住：我们不是因为看到希望才坚持。我们坚持，是为了让希望终于能够找到我们。\n\n从边缘开始。动摇结构。\n\n組織。行動。勝利。\n\n邊緣層地下網絡\nEDGE LAYER UNDERGROUND PARTY\n党首 / LEADER' },
+          { file: '集会.png', displayName: '【集會】GATHERING', narrative: '【集會】\n\n 地下集會的現場合影。\n\n 邊緣層地下網絡的成員正在集結，等待行動指令的下達。\n 每一次集會都是一次力量的展示——讓他們知道，我們不是少數，我們是大多數。\n\n <i>[GATHERING]\n\n Group photo from an underground gathering session.\n\n Members of the Edge Layer Underground Party are assembling, awaiting operational directives.\n Every gathering is a display of strength — let them know, we are not the minority, we are the majority.</i>' },
+          { file: '莫西干头英国人被捕场景.png', displayName: '【逮捕】ARREST', narrative: '【逮捕】\n\n 三天前，同誌代號「減速劑」在執行偵查任務時被捕。\n\n 他們把他帶到了上層的拘留中心——那個他們叫做「淨化中心」的地方。\n 官方說法是：違反空氣管制條例。\n 真實原因：他知道太多了。\n\n 但我們不會放棄任何同志。\n 今晚的行動目標：協調委員會已經通過了「逆滲透」計劃——潛入拘留中心，救出「減速劑」，並獲取核心區的布防圖。\n\n 這是我們第一次主動出擊。\n\n <i>[ARREST]\n\n Three days ago, comrade codename "SLOW-DOWN" was captured during a reconnaissance mission.\n\n They took him to the upper-level detention center — the one they call the "Purification Center."\n Official statement: violation of air control regulations.\n Real reason: he knew too much.\n\n But we don\'t abandon any comrade.\n Tonight\'s operation objective: the Coordination Committee has approved "Reverse Infiltration" — infiltrate the detention center, rescue "SLOW-DOWN," and obtain the core area\'s defense map.\n\n This is our first proactive strike.</i>' }
+        ]
+      },
+      {
+        id: 'folder-2',
+        name: '世界觀',
+        path: 'chapter02',
+        items: [
+          { file: '修正空间对比海报.png', displayName: '【空間對比】SPATIAL CONTRAST', narrative: '【空間對比】\n\n 上層的光照充足，每一棟建築都在人造陽光下閃閃發亮。\n 下層呢？\n 下層只有黴菌、鏽跡，和永遠散不掉的潮濕味。\n\n 但這不是劣勢。\n 這是我們的保護色。\n 他們看不見我們，因為他們根本不想看下層。\n 他們的眼睛適應了光，所以黑暗就是我們的迷彩。\n\n <i>[SPATIAL CONTRAST]\n\n The upper levels have ample lighting, every building sparkling in the sunlight.\n The lower levels?\n Mold, rust, and an eternally lingering dampness.\n\n But this isn\'t a disadvantage.\n This is our camouflage.\n They can\'t see us because they don\'t want to look at the lower levels.\n Their eyes have adapted to light, so darkness is our concealment.</i>' },
+          { file: '1777881194495.png', displayName: '【貨幣系統】CURRENCY SYSTEM', narrative: '【貨幣系統】\n\n 他們說：空氣是免費的。\n 他們撒謊。\n\n 每一口呼吸都有價格標籤。\n 你脖子上的共振晶片會記錄你消耗的氧氣量，然後每週從你的帳戶中扣除。\n 沒錢？\n 那就停下來。\n 不要呼吸。\n\n 這就是CORE LAYER的真正控制方式——不是槍炮，是經濟。\n 讓你欠債，讓你絕望，讓你別無選擇。\n\n <i>[CURRENCY SYSTEM]\n\n They say: air is free.\n They lie.\n\n Every breath has a price tag.\n The resonant chip on your neck records your oxygen consumption, then deducts it from your account every week.\n No money?\n Then stop.\n Don\'t breathe.\n\n This is CORE LAYER\'s real method of control — not guns, but economics.\n Keep you in debt, keep you desperate, leave you no choice.</i>' },
+          { file: '湮墟公開檔案_Q版封面.png', displayName: '【湮墟-公開檔案】YANXU PUBLIC ARCHIVE', narrative: '', hasChapter: true, chapterTitle: '湮墟-公開檔案 YANXU PUBLIC ARCHIVE', chapterSubtitle: '地底都市的底層邏輯', sections: [
+              {
+                id: '01',
+                title: '一、建城與下沉',
+                titleEn: 'I. Construction and Descent',
+                content: `<p>地面生態崩潰不是突發災難，是幾代人累積的結果。化學戰爭污染大氣層，工業毒素滲入土壤，穹頂外的世界進入不可逆的系統性衰敗。</p>
+<p>最初下到地底的不是難民——是先行者。有資源、有技術、有判斷力，相信自己在保存人類文明的火種。</p>
+<p>建城第一代是真正意義上的英雄時代。在地底九百米挖掘穹頂、建立核聚變供能系統、點亮第一顆人造太陽。物資極度匱乏，每個決策關乎生死。</p>
+<p>那時候「誰能共振、誰來協調」有實用邏輯——共振能力讓協調效率倍增，在建城期這是真實優勢，不是謊言。</p>
+<p>那代人相信這是暫時的。相信終有一天地面會恢復，人類會回去。</p>`,
+                contentEn: `<p>The surface ecological collapse was not a sudden disaster but the result of several generations of accumulation. Chemical warfare polluted the atmosphere, industrial toxins seeped into the soil, and the world outside the dome entered irreversible systemic decay.</p>
+<p>The first to descend were not refugees — they were pioneers. With resources, technology, and judgment, believing they were preserving the flame of human civilization.</p>
+<p>The founding generation was truly the heroic era. Excavating the dome at 900 meters underground, establishing fusion power systems, lighting the first artificial sun. Material resources were extremely scarce, every decision meant life or death.</p>
+<p>Back then, "who can resonate, who coordinates" had practical logic — resonant ability doubled coordination efficiency, during construction this was a real advantage, not a lie.</p>
+<p>That generation believed this was temporary. Believed one day the surface would recover, humanity would return.</p>`
+              },
+              {
+                id: '02',
+                title: '二、物理世界',
+                titleEn: 'II. Physical World',
+                content: `<p><strong>深度與結構</strong>：地底九百米。越靠近核心層，空氣越乾淨、燈光越穩定、醫療資源越近。越往下，化學霧濃度越高、淨化成本越高、每一次呼吸都在消耗肺。</p>
+<p><strong>能源</strong>：核聚變支撐整座城市的每一次呼吸。聚變需要稀有催化物質，開採權歸蜂巢議會獨占。能源在哪裡，權力就在哪裡。地底和地面沒有任何區別。</p>
+<p><strong>化學霧</strong>：百年前催化戰爭的遺產。至今懸浮在通風管道縫隙間，每年秋冬換季時濃度達到峰值。邊緣層居民肺部病變率是核心層的十七倍。但醫療資源按層級分配。</p>`,
+                contentEn: `<p><strong>Depth and Structure</strong>: 900 meters underground. The closer to the core layer, the cleaner the air, the more stable the lighting, the nearer the medical resources. The deeper you go, the higher the chemical fog concentration, the higher the purification cost, every breath consuming your lungs.</p>
+<p><strong>Energy</strong>: Fusion supports every breath of the entire city. Fusion requires rare catalytic substances, mining rights belong exclusively to the Hive Council. Where energy is, power is there. No difference between underground and surface.</p>
+<p><strong>Chemical Fog</strong>: Legacy of the century-old catalytic war. Still suspended in ventilation pipe gaps, concentration peaks during autumn-winter seasonal transitions. Edge layer residents' lung disease rate is 17 times that of the core layer. But medical resources are distributed by tier.</p>`
+              },
+              {
+                id: '03',
+                title: '三、鈉黃昏——唯一的光',
+                titleEn: 'III. Sodium Dusk — The Only Light',
+                content: `<p>在湮墟，光從來不是白的。</p>
+<p>十二顆人造太陽沿巨型環軌永恆旋轉，光譜由兩個波段構成：</p>
+<p><strong>589nm 鈉黃</strong>：光合菌主要能量來源，穿透化學霧能力最強。永恆的黃昏，所有物體籠罩在銹金色中。</p>
+<p><strong>700-750nm 遠紅</strong>：激活葉綠素f，維持低光環境基礎光合。不可見，但讓皮膚下的光合菌產生溫熱感。</p>
+<p>由於光合菌長期適應589nm單一波譜，邊緣層派普族的視錐細胞對其他波長極度不敏感。這就是為什麼藍窗能造成「生理性排斥」——不是因為毒，是因為從未見過。</p>
+<p>長期接觸藍光的派普族會開始恢復部分正常色覺，開始看見銹金色世界裡那些一直存在卻從未被看見的顏色。</p>
+<p>議會的真正恐懼不是晶體被干擾。是有人看見不同的顏色之後，開始追問為什麼，催生更多幻想。</p>`,
+                contentEn: `<p>In Yǎnxū, light is never white.</p>
+<p>Twelve artificial suns rotate eternally along giant orbital tracks, spectrum composed of two wavelength bands:</p>
+<p><strong>589nm Sodium Yellow</strong>: Main energy source for photosynthetic bacteria, strongest penetration through chemical fog. Eternal dusk, all objects shrouded in rust-gold.</p>
+<p><strong>700-750nm Far Red</strong>: Activates chlorophyll-f, maintains low-light environment basic photosynthesis. Invisible, but causes warmth in skin-level photosynthetic bacteria.</p>
+<p>Due to long-term adaptation to 589nm single spectrum, Edge Layer Pipe族的 cone cells are extremely insensitive to other wavelengths. This is why Blue Window causes "physiological rejection" — not because of poison, but because it's never been seen.</p>
+<p>Long-term exposure to blue light allows Pipe族 to begin recovering partial normal color vision, beginning to see colors that have always existed but never been seen in the rust-gold world.</p>
+<p>The Council's real fear isn't crystal interference. It's people seeing different colors, then starting to ask why, birthing more fantasies.</p>`
+              },
+              {
+                id: '04',
+                title: '四、權力結構',
+                titleEn: 'IV. Power Structure',
+                content: `<p><strong>共振家族——科學包裝的血統</strong></p>
+<p>地底都市的權力結構有一條無法打破的鐵律：血統。不是封建社會那種血統。是科學包裝過的血統。</p>
+<p>共振家族在子女幼年（通常3至7歲）植入共振晶體。這個年齡段神經可塑性最強，晶體與神經系統深度融合後，可以發送並接收共振信號，參與蜂巢議會的集體決策。幼年融合度決定終身上限。</p>
+<p>他們掌握測定標準，掌握話語權，用「能力」「努力」「家風」包裝世襲。讓血統決定命運這件事看起來科學而公平。</p>
+<p><strong>蜂巢議會</strong></p>
+<p>決策不需要開會，不需要辯論——共振頻率同步的瞬間，決策已經完成。聽起來很美。但「同步」是所有人意志的真實匯聚，還是最強頻率對較弱頻率的覆蓋？這個問題沒有人被允許公開提出。</p>`,
+                contentEn: `<p><strong>Resonance Families — Scientifically Packaged Bloodline</strong></p>
+<p>The underground city's power structure has one unbreakable iron law: bloodline. Not feudal society bloodline — scientifically packaged bloodline.</p>
+<p>Resonance families implant resonant crystals in children during early childhood (usually 3-7 years old). At this age neural plasticity is highest, after deep integration with the nervous system, they can send and receive resonant signals, participating in the Hive Council's collective decision-making. Early integration degree determines lifelong ceiling.</p>
+<p>They control measurement standards, control discourse, package hereditary with "ability," "effort," "family tradition." Make bloodline determining fate look scientific and fair.</p>
+<p><strong>Hive Council</strong></p>
+<p>Decisions don't need meetings, don't need debates — the moment resonant frequency synchronization occurs, decisions are already made. Sounds beautiful. But is "synchronization" true aggregation of everyone's will, or strongest frequency overwriting weaker ones? No one is permitted to publicly raise this question.</p>`
+              },
+              {
+                id: '05',
+                title: '五、派普族',
+                titleEn: 'V. Pipe族',
+                content: `<p>派普族是城市工蜂。承擔運轉，領取配額，無權投票。共振人用「派普」（Pipe）嘲諷他們——給水管倒水，是對資源的浪費。但整座城市離開派普族會在三小時內崩潰。共振家族不搬運物資，不維護管道，不處理下水道，不開採深層礦石。他們只負責「協調」。</p>
+<p><strong>配額制度</strong>：空氣不是自然存在的東西。它被過濾、被計量、被分層儲存，也被分配給每一個還能工作的人。呼吸配額由系統根據貢獻值、崗位等級、健康狀況和居住層級決定，通過工作賺取息珀幣 Breath Amber兌換。跨層轉移需扣除「輸送損耗費」。</p>`,
+                contentEn: `<p>Pipe族 are the city's worker bees. Bear operation, receive quotas, no voting rights. Resonant people mock them with "Pipe" — watering pipes is a waste of resources. But the entire city would collapse within three hours without Pipe族. Resonance families don't transport goods, don't maintain pipes, don't handle sewage, don't mine deep ore. They only负责"coordination."</p>
+<p><strong>Quota System</strong>: Air is not something natural. It's filtered, measured, tiered stored, and distributed to everyone who can still work. Breath quotas are determined by the system based on contribution value, job tier, health status, and residential tier, earned through work as Breath Amber tokens. Cross-tier transfer requires deducting "transport loss fees."</p>`
+              },
+              {
+                id: '06',
+                title: '六、地下黨',
+                titleEn: 'VI. Underground Party',
+                content: `<p>派普族的地下反抗組織。嚴格控制配額，通過配額交換獲取裝備和軍火。</p>
+<p>他們希望用斬首計劃和恐怖襲擊重構權力結構。他們知道這個系統是不公平的。知道自己被壓迫。</p>`,
+                contentEn: `<p>Pipe族的地下反抗組織。嚴格控制配額，通過配額交換獲取裝備和軍火。</p>
+<p>They hope to restructure power through decapitation plans and terrorist attacks. They know this system is unfair. Know they are oppressed.</p>`
+              }
+            ]
+          },
+          { file: '共振家族核心双人_3比4竖版.png', displayName: '【共振議會】RESONANCE COUNCIL', narrative: '【共振議會】\n\n共振家族宛如一個合唱團，多種頻率，在需要決策時會同步融合。\n\n瓦列里婭是那個確保最大公約數始終傾向於她的人。不是通過壓制，是通過提前調整參數。她在共振開始之前就已經算好了結果，然後用自己的頻率引導所有人的頻率向那個方向收斂。\n\n瓦列里婭·克雷洛夫 (Valeria Krelov) 的統治哲學是她自己總結的：\n「慈悲需要半徑。沒有半徑的慈悲是鄉愿，是腐爛的空氣。我只對我能觸及的範圍負責。至於邊界之外——那是邊界外的人需要解決的問題。」她不喜歡笑。但當她笑的時候，通常意味著有人剛剛犯了致命的錯誤，而她正好需要這個人意識到這一點。\n\n馮·卡爾不是完美的共振者。他是在十三歲那年接受的晶體植入，成年後融合，只能接收無法發送。\n他的工作是什麼？翻譯，也是瓦列里婭的白手套。把議會的意志翻譯成可以輸出的信號，把外部的噪音翻譯成可以消化的情報，必要的時候對噪音源進行處理。\n\n<i>[RESONANCE COUNCIL]\n\nThe resonance families are like a choir — multiple frequencies, synchronized and merged when decisions are needed.\n\nValeria is the one who ensures the greatest common divisor always tends toward her. Not through suppression, but by adjusting parameters in advance. Before resonance even begins, she has already calculated the result, then uses her frequency to guide everyone else\'s frequencies to converge in that direction.\n\nValeria Krelov\'s governing philosophy she herself summarized:\n"Compassion needs a radius. Compassion without a radius is just niceness, rotting air. I only take responsibility for the range I can reach. As for beyond the boundary — that\'s the problem of people beyond the boundary." She doesn\'t like to laugh. But when she does, it usually means someone just made a fatal mistake, and she happens to need that person to realize it.\n\nVon Kal is not a perfect resonator. He received his crystal implantation at age thirteen, adult integration, can only receive cannot send.\nHis job? Translation, also Valeria\'s white glove. Translating the Council\'s will into outputtable signals, translating external noise into digestible intelligence, and when necessary, processing the noise source.</i>' }
+        ]
+      },
+      {
+        id: 'folder-7',
+        name: '共振程序',
+        path: 'program',
+        external: 'hive_council_branch_1.html',
+        items: [
+          { file: 'hive_council_branch_1.html', displayName: '【進入共振】ENTER RESONANCE', narrative: '點擊進入共振程序\n\n<i>[ENTER RESONANCE]</i>' }
+        ]
+      },
+      {
+        id: 'folder-3',
+        name: '藍窗',
+        path: 'chapter03',
+        items: [
+          { file: '呼吸参政权益抽象海报.png', displayName: '【呼吸權】BREATH RIGHTS', narrative: '【呼吸權】\n\n 呼吸不是特權。\n\n 這是我們的宣言，也是我們的底線。\n 每一個人都有權利呼吸，每一口空氣都不應該被標價。\n\n 當他們把空氣裝進瓶子裡販賣，當他們在地下室收取氧氣費，我們就知道：\n 這個系統不是為了讓人類生存，它是為了讓少數人控制大多數人。\n\n 我們要打破這個規則。\n\n <i>[BREATH RIGHTS]\n\n Breathing is not a privilege.\n\n This is our declaration, and our bottom line.\n Everyone has the right to breathe, every breath should not be tagged with a price.\n\n When they put air into bottles and sell it, when they charge oxygen fees in basements, we know:\n This system isn\'t designed for human survival — it\'s designed for a few to control the many.\n\n We will break this rule.</i>' },
+          { file: '蓝窗角色设定图.png', displayName: '【藍窗】BLUE WINDOW', narrative: '【藍窗】\n\n 代號：藍窗\n 角色：通訊專家\n\n 她的任務是維護地下鐵路的通訊網絡——確保每一條消息都能正確、及時地傳遞。\n\n 她的設備是一套改裝過的信號增強器，能夠在CORE LAYER的干擾下保持通訊暢通。\n 但這不是她最重要的工具。\n 她最重要的工具是她的沉默。\n\n 她很少說話，只用代碼交流。\n 所以當她開口時，每個人都會停下來傾聽。\n\n <i>[BLUE WINDOW]\n Codename: BLUE WINDOW\n Role: Communications Expert\n\n Her mission: maintain the underground railroad\'s communication network — ensuring every message is transmitted correctly and timely.\n\n Her equipment is a set of modified signal boosters, capable of maintaining communication despite CORE LAYER interference.\n But this isn\'t her most important tool.\n Her most important tool is her silence.\n\n She rarely speaks, communicating only in code.\n So when she speaks, everyone stops to listen.</i>',
+            hasChapter: true,
+            chapterTitle: '藍窗 BLUE WINDOW',
+            chapterSubtitle: '地底都市的意識形態寓言',
+            sections: [
+              {
+                id: '01',
+                title: '01. 锈金色的日常与向上攀爬的她',
+                titleEn: '01. Rust-Golden Days and the Woman Who Climbed Up',
+                content: `<p>所谓呼吸，是一件极其昂贵的事情。</p>
+<p>这并不是某种带有隐喻色彩的诗意修辞，而是在这地底九百米的"湮墟"中，字面意义上的物理法则。不，或者说，是经济法则更准确一些。如果你每天早晨不在中层分配站前排队领取那块灰扑扑的"呼吸牌"，你的肺就不再属于你，而是属于这座城市化学雾的填埋场。</p>
+<div class="section-illustrations">
+  <img src="assets/chapter01/Chapter01_Frame01_Yang_Ambition.png" alt="杨的野心">
+  <img src="assets/chapter01/Chapter01_Frame02_An_Yang_Plan.png" alt="安与杨的计划">
+</div>
+<p>也就是说，我，安，作为一个光纹暗淡得像是在皮肤上涂了劣质荧光粉的派普族（Pipe）通风维修工，我的人生意向可以说是极其明确且单一的：活下去。不看不听，不思不想，像一条合格的水管一样，只负责让浑浊的空气通过我的身体，不留下一丝痕迹。</p>
+<p><strong>无知是最好的防毒面具，这是地底生存的第一定律。</strong></p>
+<p>但杨不这么想。</p>
+<p>杨是个好女人。所谓好女人，在地底九百米的语境下，就是指那些明明每天吸着中等浓度的化学雾，在分配站做着枯燥的额度清算工作，却依然能把省吃俭用买来的劣质光合菌贴片，贴出一种上层穹顶区晚礼服质感的女人。</p>
+<p>"听着，只要再弄到最后两克高纯度晶核废料，我就可以打通分配站站长的那个漏洞。"</p>
+<p>杨在说这句话的时候，眼睛里闪烁着那种让我感到胃部抽搐的光芒。不是钠黄昏那种让人昏昏欲睡的锈金色，而是一种名为"上进心"的致命辐射。</p>
+<p>"漏洞？你是说那个可以直接让你申请配额扩增，甚至被推荐去接受'接收型共振晶体'植入的漏洞吗？"我叹了口气，把手里刚领到的呼吸牌在指尖转了一圈，"杨，我说句大逆不道的话，蜂巢议会那些大人物脑子里的共振频率，大概和下层排水管里的老鼠叫声没什么区别。你为了在脑子里装个收音机去听他们吵架，值得去碰黑市的晶核废料吗？"</p>
+<p>"你懂什么？"杨白了我一眼，那个白眼翻得极具阶级跃升的野心，"那是'声音'吗？那是'意志'。只要能接入共振网络，哪怕只能听不能说，我们也算半个上层人了。你难道想一辈子在通风管里闻铁锈味吗？"</p>
+<p>不想。但我更不想死。</p>
+<p>但问题在于，我爱她。或者说，在这样一个看什么都像蒙着一层生锈滤镜的城市里，她那种近乎病态的向上攀爬的生命力，是我唯一能感受到的温度。</p>
+<p>所以，当杨告诉我，账目漏洞的填补期限就在今晚，而她还差一块晶核废料时，我那常年处于待机状态的生存本能，为了可悲的爱情，暂时短路了。</p>
+<p>"我去吧。"我说。</p>
+<p><strong>向下。向下。向下。</strong>去那个连锈金色光芒都嫌弃的下层矿区与排水系统。</p>`,
+                contentEn: `<p>Breathing is an extremely expensive endeavor.</p>
+<p>This isn't some metaphorical poetic device — in this 900-meter-deep "Yǎnxū" underground city, it's literally a physical law. Or rather, an economic law to be more precise. If you don't line up at the middle-tier distribution station every morning to collect that gray "breath token," your lungs no longer belong to you — they belong to the city's chemical fog landfill.</p>
+<div class="section-illustrations">
+  <img src="assets/chapter01/Chapter01_Frame01_Yang_Ambition.png" alt="Yang's Ambition">
+  <img src="assets/chapter01/Chapter01_Frame02_An_Yang_Plan.png" alt="An and Yang's Plan">
+</div>
+<p>That is to say, I, Ahn — a Pipe族的通风维修工 whose light-marks are as dim as cheap fluorescent powder smeared on skin — my life purpose is extremely clear and singular: survive. Don't see, don't hear, don't think, don't feel. Like a qualified pipe, only responsible for letting murky air pass through my body without leaving a trace.</p>
+<p><strong>Ignorance is the best gas mask — that's the first law of underground survival.</strong></p>
+<p>But Yang doesn't think so.</p>
+<p>Yang is a good woman. What constitutes a "good woman" at 900 meters underground? It means those who, despite inhaling moderate-concentration chemical fog daily and doing tedious quota calculations at the distribution station, can still apply cheap photosynthetic bacteria patches in a way that evokes the texture of an upper-tier穹顶区 evening gown.</p>
+<p>"Listen, I just need two more grams of high-purity crystal core waste material, and I can punch through the station master's loophole."</p>
+<p>When Yang said this, her eyes glistened with something that made my stomach churn. Not the drowsy rust-gold of钠黄昏, but a kind of fatal radiation called "ambition."</p>
+<p>"A loophole? You mean the one that could directly let you apply for quota expansion, even get recommended for 'receiving-type resonant crystal' implantation?" I sighed, spinning the breath token I'd just collected between my fingers. "Yang, I'm committing heresy here, but the resonance frequencies in the heads of those Hive Council big shots are probably no different from rat squeals in the lower drainage pipes. Is it worth touching black market crystal waste just to install a radio in your head to listen to them argue?"</p>
+<p>"What do you know?" Yang gave me a look, the eye-roll full of class-climbing ambition. "That's not 'sound' — it's 'will.' As long as we can connect to the resonance network, even if we can only listen and not speak, we're half upper-tier people. You want to smell rust in ventilation pipes forever?"</p>
+<p>I don't. But I want to live even more.</p>
+<p>But here's the problem: I love her. Or rather, in a city where everything looks like it's coated with a rusty filter, her almost pathological climbing vitality is the only warmth I can feel.</p>
+<p>So when Yang told me the deadline for filling the account loophole was tonight, and she was still one crystal core short — my usual standby survival instinct temporarily short-circuited for the sake of pathetic love.</p>
+<p>"I'll go." I said.</p>
+<p><strong>Down. Down. Down.</strong> To the lower mines and drainage systems that even rust-gold light deems too嫌弃.</p>`
+              },
+              {
+                id: '02',
+                title: '02. 深渊的盲盒与不可视的色彩',
+                titleEn: '02. The Abyss\'s Mystery Box and Colors That Cannot Be Seen',
+                content: `<p>下层的化学雾浓度，已经到了可以让肺部直接发表演讲抗议的地步。</p>
+<div class="section-illustrations">
+  <img src="assets/chapter02/Chapter02_Frame01_An_BlackMarket.png" alt="黑市">
+  <img src="assets/chapter02/Chapter02_Frame02_BlueWindow_Revelation.png" alt="蓝窗显现">
+</div>
+<p>我戴着面罩，手里攥着杨攒了半年的配额，像一只在猫窝边缘试探的耗子，摸进了深层排水系统的黑市。老实说，交易本身顺利得让我觉得是个陷阱——而事实证明，我的直觉虽然迟钝，但通常在这个时候准得要命。</p>
+<p>就在废料刚刚交接到我手里的一瞬间，警报声撕裂了下层的沉闷。</p>
+<p>"执法队扫荡！该死的共振狗——！"</p>
+<p>人群像被倒了热水的蚁群一样炸开。我甚至来不及分辨方向，只是本能地往更深的阴影里钻。然而，就在我准备把自己塞进一个废弃排风扇的缝隙时，一只极其有力的手抓住了我的后领，直接把我拖进了一道暗门里。</p>
+<p>门后是一片连钠黄昏的光都照不进来的绝对黑暗。</p>
+<p>"闭嘴。不想被共振探针扫到，就停止你那可笑的急促呼吸。"一个沙哑的声音在黑暗中响起。</p>
+<p>我立刻照做，连光合菌都吓得暗了几个度。借着极其微弱的环境光，我意识到我被几个人围住了。他们身上的光纹被刻意压抑到了极限，几乎与岩石融为一体。</p>
+<p><strong>断联组织。那些主动切断共振网络，游荡在法律与常理之外的"无籍人口"。</strong></p>
+<p>"你在发抖。派普族的工蜂？还是上面派来送死的诱饵？"另一个声音问道，带着某种金属般的冷意。</p>
+<p>"我发誓，我只是个来买废料的痴情种，或者说是个被爱情冲昏头脑的白痴，随便你们怎么定义。"我举起双手，"我对议会没有任何忠诚可言，当然对你们也没有。我只想回家。"</p>
+<p>黑暗中传来几声低沉的笑声。</p>
+<p>"诚实的白痴。但我们不相信言语，我们只相信反应。"</p>
+<p>沙哑声音的主人向前走了一步。我听到了某种机械装置解锁的"咔哒"声。</p>
+<p>"听说过'蓝窗'吗，工蜂先生？"</p>
+<p>"在非法的非法条例中听说过。据说是一种能干扰共振晶体的光……"</p>
+<p>"那是上面骗你们这些白痴的。"</p>
+<p>他掀开了一块黑布。</p>
+<p><strong>那一瞬间，某种东西刺穿了我的视网膜。</strong></p>
+<p>那不是光。那是一种物理学意义上的暴力。在我的整个人生中，世界是由锈金色、红色、以及混浊的灰黑色组成的。我的视锥细胞早就习惯了这种温吞的、让人昏昏欲睡的色谱。</p>
+<p>但现在，那个盒子里发出的光，是470-500nm波段的绝对异类。</p>
+<p>冷。极其孤绝的冷。像是一根由冰打造的针，直接从眼睛刺入大脑的额叶。它不带任何妥协，不属于这座地底都市的任何一个角落。</p>
+<p>"看清楚。然后告诉我，你看到了什么？"</p>
+<p>我看到了什么？我无法用语言描述。我的大脑因为缺乏对应的词汇容器而陷入了狂乱的死机状态。"蓝色"，这个在旧纪元音频里出现过的发音，此刻化作了某种实质性的毒药，在我的神经里横冲直撞。</p>
+<p>"呕——"</p>
+<p>我的身体比大脑先一步做出了反应。强烈的眩晕感和剧烈的恶心感瞬间淹没了我，我跪倒在地，胃里的酸水混合着化学雾的残渣吐了一地。那一刻，我感觉自己原本认知的世界正在像廉价墙皮一样剥落。</p>
+<p>那些断联者看着我狼狈的样子，满意地收起了设备。</p>
+<p>"生理性排斥，视锥细胞尚未恢复，过曝反应典型。他不是共振家族的线人，那些人的眼睛早就用补充剂习惯了。"</p>
+<p>我不知道自己是怎么逃出那个排水系统的。我只记得我像一滩烂泥一样爬回了中层，手里死死攥着那块晶核废料。</p>
+<p>我当然不知道后来发生了什么。作为一个把"无知"当成最高生存法则的派普族，我理所当然地以为只要闭上眼睛，身后的深渊就会自动消失。</p>
+<p>我不知道执法队的共振探针最终还是扫到了那片绝对黑暗的边缘；我不知道那些试图向我展示真实色彩的断联者并没有全部逃脱；我更不知道，在接下来针对光合菌的极度残酷的神经刑讯中，某个承受不住过载痛楚的断联者，用嘶哑的嗓音，向审讯官勾勒出了一个刚刚接触过"蓝窗"的中层维修工的狼狈背影。</p>
+<p>那时候的我，正像个凯旋的白痴一样往回爬。完全不知道一张布满微型监听器的无形罗网，已经悄然张开，精准地铺在了我那狭小住所的天花板上。</p>`,
+                contentEn: `<p>The chemical fog concentration in the lower levels had reached the point where lungs could directly file a protest speech.</p>
+<div class="section-illustrations">
+  <img src="assets/chapter02/Chapter02_Frame01_An_BlackMarket.png" alt="Black Market">
+  <img src="assets/chapter02/Chapter02_Frame02_BlueWindow_Revelation.png" alt="Blue Window Revealed">
+</div>
+<p>I wore a mask, clutching the配额 Yang had saved for half a year, like a mouse probing the edge of a cat's nest, sneaking into the deep drainage system's black market. Honestly, the transaction itself went smoothly enough to make me think it was a trap — and as it turned out, my instincts, though slow, were usually accurate at times like this.</p>
+<p>Just as the waste material was handed over to me, an alarm shattered the lower level's沉闷.</p>
+<p>"Raid! Damn resonance dogs — !"</p>
+<p>The crowd exploded like an ant nest poured with hot water. I didn't even have time to distinguish direction, just本能地 diving deeper into the shadows. However, as I was about to squeeze myself into an abandoned exhaust fan crevice, an extremely powerful hand grabbed my collar and dragged me through a hidden door.</p>
+<p>Behind the door was absolute darkness that even钠黄昏's light couldn't penetrate.</p>
+<p>"Shut up. If you don't want to be scanned by resonance probes, stop your ridiculous gasping." A hoarse voice rang out in the darkness.</p>
+<p>I immediately complied, even my photosynthetic bacteria dimmed several degrees. With extremely faint ambient light, I realized I was surrounded by several people. Their light-marks were deliberately suppressed to the limit, almost blending into the rock.</p>
+<p><strong>断联组织. Those who voluntarily severed their resonance network, wandering outside of law and common sense — "unregistered population."</strong></p>
+<p>"You're shaking. Pipe族的工蜂? Or bait sent from above?" Another voice asked, with a metallic coldness.</p>
+<p>"I swear, I'm just a lovesick fool buying waste material, or a lovesick idiot addled by love, define me however you want." I raised my hands. "I have no loyalty to the Council, and none to you either. I just want to go home."</p>
+<p>Low laughter echoed from the darkness.</p>
+<p>"Honest idiot. But we don't believe words, only reactions."</p>
+<p>The owner of the hoarse voice stepped forward. I heard the "click" of some mechanical device unlocking.</p>
+<p>"Heard of 'Blue Window,' 工蜂先生?"</p>
+<p>"Heard it in illegalillegal regulations. They say it's a light that interferes with resonance crystals..."</p>
+<p>"That's what they tell you idiots to keep you compliant."</p>
+<p>He lifted a piece of black cloth.</p>
+<p><strong>At that moment, something pierced my retina.</strong></p>
+<p>It wasn't light. It was physical violence. In my entire life, the world had been composed of rust-gold, red, and murky gray-black. My cone cells had long since adapted to this lukewarm, drowsy color spectrum.</p>
+<p>But now, the light emanating from that box was an absolute anomaly in the 470-500nm range.</p>
+<p>Cold. Extremely isolated cold. Like a needle made of ice, piercing directly from the eye into the brain's frontal lobe. It carried no compromise, belonged to no corner of this underground city.</p>
+<p>"Look clearly. Then tell me, what do you see?"</p>
+<p>What did I see? I couldn't describe it with language. My brain, lacking corresponding vocabulary containers, went into狂乱的死机状态. "Blue" — this pronunciation that had appeared in old-era audio — now transformed into some kind of实质性毒药, ramming through my nerves.</p>
+<p>"Ugh —"</p>
+<p>My body reacted before my brain. Intense dizziness and violent nausea instantly overwhelmed me, I knelt on the ground, vomiting stomach acid mixed with chemical fog residue. At that moment, I felt the world I had originally perceived peeling away like cheap wall plaster.</p>
+<p>Those断联者 looked at my wretched state, satisfied, and put away their equipment.</p>
+<p>"Physiological rejection, cone cells not yet recovered, typical overexposure reaction. He's not a resonance family's mole — those people's eyes are already accustomed to supplements."</p>
+<p>I don't know how I escaped that drainage system. I only remember crawling back to the middle tier like a puddle of mud, clutching that crystal core waste material for dear life.</p>
+<p>Of course, I didn't know what happened afterward. As a Pipe族 who treated "ignorance" as the supreme survival principle, I理所当然地 thought that as long as I closed my eyes, the abyss behind me would automatically disappear.</p>
+<p>I didn't know the raid's resonance probes eventually scanned the edge of that absolute darkness; I didn't know that not all the断联者 who tried to show me true colors escaped; and I especially didn't know that in the接下来的 brutal nerve interrogation of photosynthetic bacteria, a断联者 who couldn't withstand the overload pain, in a hoarse voice, sketched out a狼狈背影 of a middle-tier maintenance worker who had just contacted the "Blue Window" to the interrogator.</p>
+<p>At that time, I was crawling back like a triumphant idiot. Completely unaware that a invisible net filled with micro-listeners had already quietly spread, precisely laid across the ceiling of my small residence.</p>`
+              },
+              {
+                id: '03',
+                title: '03. 过曝的清晨与不存在的狂人',
+                titleEn: '03. An Overexposed Morning and the Imaginary Madman',
+                content: `<p>第二天早晨。一切似乎都恢复了正常。杨拿到废料时开心地亲吻了我，那是一个带着点铁锈味和化学香精味的吻。</p>
+<div class="section-illustrations">
+  <img src="assets/chapter03/Chapter03_Frame01_Dan_FirstAppearance.png" alt="丹的第一次出现">
+  <img src="assets/chapter03/Chapter03_Frame02_Dan_Whispers.png" alt="丹的低语">
+</div>
+<p>但我知道，有某种东西坏掉了。</p>
+<p>我看着分配站顶部的钠黄昏人造太阳，原本永恒的锈金色里，似乎渗出了一丝让我头皮发麻的、隐约的杂质。我的眼睛像是宿醉了一样胀痛，那种被称为"蓝色"的毒素还在我的视觉边缘游荡。更糟糕的是，我的脑子里开始嗡嗡作响。</p>
+<p>这在医学上大概被称为"第三层认知的过曝"。但作为一个连去诊所看病都要心疼配额的派普族，我只能把它归咎于没睡好。</p>
+<p>我提着工具箱，像往常一样爬进C-4区域的巨型通风管道。这是我的工作，在这条管子里，只有化学雾和我作伴。</p>
+<p>"哟，早上好啊，痴情种。"</p>
+<p>一个声音在管道的前方突兀地响起。</p>
+<p>我吓得差点把扳手掉下去。定睛一看，在管道的阴影里，坐着一个男人。他穿着和我一模一样的派普族工装，但那身破布却被他穿出了一种防弹衣的嚣张感。他的肌肉线条在昏暗中显得异常紧绷，眼神里透着一种我这辈子都没见过的——该怎么形容呢——就像是随时准备把这根管子拆了用来打人的桀骜。</p>
+<p>他的手指间夹着一根根本不存在的烟，正对着我虚空吐着烟圈。</p>
+<p>"你……是谁？新来的维修工？"我警惕地握紧了扳手。这个管道是我的辖区，平时根本不会有别人进来。</p>
+<p>"我是谁不重要。你可以叫我'丹'，或者'真相'，或者'那个唯一清醒的混蛋'。"他从高处跳下来，悄无声息地落在我面前，"你脸色很差啊。怎么，昨晚看了点不该看的东西，发现自己大半辈子都活在一个被人精心装潢的化粪池里，胃部痉挛还没缓过来吗？"</p>
+<p>我猛地后退一步，后背撞在了冰冷的管壁上："你怎么知道……"</p>
+<p>"我怎么知道？"丹哈哈大笑，笑声在管道里回荡，带着一种几乎要刺破耳膜的穿透力，"这地方是个什么狗屎玩意儿，只有那些脑子里塞了石头的白痴才看不出来。共振家族？蜂巢议会？一群躲在上面吸着干净氧气，用伪造的意志把你们像水蛭一样榨干的寄生虫罢了。而你们呢？每天为了多吸一口毒气而对他们感恩戴德。太可笑了，简直可笑到了艺术的级别！"</p>
+<p>他说的每一个字，都如同炸雷般在我的脑海里回响。这些大逆不道的话，是我从小到大想都不敢想，却又在潜意识的最深处无数次盘旋过的念头。</p>
+<p>"你疯了！如果被上面听到……"我压低声音，惊恐地四下张望。</p>
+<p>"听到又怎样？用他们那些可悲的晶体来覆盖我的脑电波吗？"他走近我，伸手拍了拍我的肩膀。那一瞬间，我感受到了一种真实的重量和热度，"听着，安。你都已经见过那种'颜色'了，你已经知道他们撒了一个多大的谎。你还要回去继续当一条每天算计着几个呼吸牌的水管吗？"</p>
+<p>他凑到我耳边，声音如同魔鬼的低语，却又带着一种该死的、不可抗拒的魅力：</p>
+<p><strong>"你都知道这个社会的真面目了，我们要去反抗它啊。我们要把那十二个生锈的人造太阳，一个一个地砸下来。"</strong></p>
+<p>我呆呆地看着他。在钠黄昏的黯淡光线中，我甚至觉得他是这辈子我见过的，最耀眼的人。</p>
+<p>我把他当成了在这个腐朽绝望的城市里，唯一能和我共享秘密的、清醒的朋友。</p>
+<p>我不知道，根本没有新来的维修工。</p>
+<p>我不知道，那份拍打肩膀的重量，只是我自身肌肉痉挛产生的错觉。</p>
+<p><strong>我更不知道，在那个我被迫直视"蓝窗"的夜晚，我那因为极度恐惧而分裂出去的反叛人格，已经在这具行尸走肉般的躯壳里，彻底苏醒了。</strong></p>`,
+                contentEn: `<p>The next morning. Everything seemed to return to normal. Yang kissed me happily when she got the waste material — a kiss带着点铁锈味和化学香精味.</p>
+<div class="section-illustrations">
+  <img src="assets/chapter03/Chapter03_Frame01_Dan_FirstAppearance.png" alt="Dan's First Appearance">
+  <img src="assets/chapter03/Chapter03_Frame02_Dan_Whispers.png" alt="Dan's Whispers">
+</div>
+<p>But I knew something had broken.</p>
+<p>Looking at the钠黄昏 artificial sun at the top of the distribution station, the eternal rust-gold seemed to have seeped in a vaguely让我头皮发麻的 impurity. My eyes ached like a hangover, and that toxin called "blue" was still wandering at the edge of my vision. Worse still, something started buzzing in my brain.</p>
+<p>In medical terms, this was probably called "third-layer cognitive overexposure." But as a Pipe族 who心疼配额 even for a doctor's visit, I could only attribute it to not sleeping well.</p>
+<p>I carried my toolkit, climbing into the giant ventilation pipes of C-4 area as usual. This was my job — in these pipes, only chemical fog kept me company.</p>
+<p>"Yo, good morning, lovesick fool."</p>
+<p>A voice abruptly sounded ahead in the pipe.</p>
+<p>I nearly dropped my wrench in fright. Looking carefully, sitting in the shadows of the pipe, was a man. He wore the exact same Pipe族工装 as me, but those rags were worn with the嚣张感 of bulletproof armor. His muscle lines were abnormally taut in the dim light, his eyes revealing a桀骜 I'd never seen in my life — how to describe it — like he was随时准备把这根管子拆了用来打人.</p>
+<p>Between his fingers was a cigarette that absolutely didn't exist,虚拟吐烟圈 towards me.</p>
+<p>"You... Who are you? New maintenance worker?" I gripped my wrench tightly. This pipe was my jurisdiction — normally nobody else would come in.</p>
+<p>"Who I am doesn't matter. You can call me 'Dan,' or 'Truth,' or 'that one清醒的混蛋'." He jumped down from above, landing silently in front of me. "You look terrible. What, last night you saw something you shouldn't have, realized you've lived大半辈子in a elaborately decorated粪池, and your stomach cramps haven't subsided yet?"</p>
+<p>I猛地后退一步, my back hitting the icy pipe wall: "How do you know..."</p>
+<p>"How do I know?" Dan laughed heartily, laughter echoing through the pipe with an almost耳膜穿透的穿透力. "This place is just some dog shit, only idiots with rocks in their heads can't see that. Resonance families? Hive Council? A bunch of parasites hiding up above sucking clean oxygen, using fabricated will to榨干you like leeches. And you all? Thankful to them every day for another breath of poison. Pathetic, reaching the level of art!"</p>
+<p>Every word he said resonated like thunder in my mind. These heresies were things I'd never dared think, yet had盘旋无数次 in the depths of my subconscious.</p>
+<p>"You're insane! If the ones above hear..." I lowered my voice,惊恐地四下张望.</p>
+<p>"So what if they hear? Use those pathetic crystals to覆盖 my brainwaves?" He走近我, patting my shoulder. At that instant, I felt a真实的重量和热度. "Listen, Ahn. You've already seen that 'color,' you already know what a huge lie they've been telling. Are you going back to being a pipe calculating breath tokens every day?"</p>
+<p>He leaned close to my ear, voice like魔鬼的低语, yet带着一种该死的、不可抗拒的魅力:</p>
+<p><strong>"You already know the truth about this society — we need to fight back. We need to砸 those twelve rusty artificial suns, one by one."</strong></p>
+<p>I stared at him blankly. In the dim light of钠黄昏, I even felt he was the最耀眼的人 I'd ever seen in my life.</p>
+<p>I made him my only friend in this rotten desperate city — the only清醒的 one with whom I could share secrets.</p>
+<p>I didn't know there was no new maintenance worker.</p>
+<p>I didn't know that the weight of that shoulder pat was just a错觉 produced by my own muscle spasms.</p>
+<p><strong>What I更不知道 was that on the night I was forced to look directly at the "Blue Window," the rebellious personality that split from me due to extreme fear had already彻底苏醒 in this行尸走肉般的躯壳里.</strong></p>`
+              },
+              {
+                id: '04',
+                title: '04. 毒苹果的滋味与破碎的钠黄昏',
+                titleEn: '04. The Taste of the Poison Apple and the Shattered Sodium Dusk',
+                content: `<p>丹开始频繁地出现在我的生活里。</p>
+<p>他在我给排风扇上润滑油的时候蹲在扇叶上嘲笑我的姿势；他在我吃着配给合成粮的时候坐在桌子对面，滔滔不绝地发表关于"碳水化合物是对底层人民最廉价的维稳工具"的脱口秀。</p>
+<div class="section-illustrations">
+  <img src="assets/chapter04/Chapter04_Frame01_Yang_CrystalImplant.png" alt="杨的晶体植入">
+  <img src="assets/chapter04/Chapter04_Frame02_An_Confession.png" alt="安的坦白">
+</div>
+<p>一开始，我试图无视他。但后来我发现，当你脑子里有一个声音比你更聪明、更刻薄、且完全洞悉你所有的懦弱时，你是无法无视他的。他就像是我喉咙里的一根鱼刺，时刻提醒着我：你已经不纯粹了，你被那束蓝光污染了，你是个装睡的瞎子。</p>
+<p>而真正把这根鱼刺硬生生按进我心脏的，是杨。</p>
+<p>那天晚上，杨带着一种我从未见过的、近乎狂热的喜悦冲回了我们那狭小的住所。她的光合菌贴片在激动的心情下闪烁着病态的高光。</p>
+<p>"安！批下来了！上面批下来了！"杨死死抓住我的肩膀，指甲几乎嵌进我的肉里，"B派的某个议员需要中层的代表。因为我交上去的那块高纯度晶核废料，我被选中了！他们会在下个月给我进行'接收型共振晶体'的植入手术！我们还可以搬去穹顶区的边缘，不用再吸这些该死的化学雾了！"</p>
+<p>她激动地描绘着那个充满干净氧气和明亮光纹的未来。而在她身后，丹正靠在墙上，用一种看濒死实验小白鼠的眼神看着她。</p>
+<p>"多感人啊，"丹吐出一口虚无的烟圈，"一只工蜂终于争取到了被端上餐桌的资格，并且因为餐盘是金子做的而感激涕零。你要告诉她吗，安？告诉她那个名为'晶体'的毒苹果里，究竟藏着什么？"</p>
+<p>"闭嘴。"我低声咒骂。</p>
+<p>"告诉她啊！"丹突然暴起，他猛地跨过狭小的房间，一脚踹翻了桌子，然后一把抓起桌上那盏用来照明的便携式钠灯，狠狠地砸向了自己的额头。</p>
+<p>"砰——！"</p>
+<p>玻璃碎裂的声音在逼仄的房间里如同炸雷。锈金色的光芒闪烁了两下，彻底熄灭。</p>
+<p>"安！你疯了吗？！"</p>
+<p>杨惊恐的尖叫声撕裂了黑暗。借着窗外透进来的微弱路灯，我呆滞地低下头。</p>
+<p><strong>我的手里握着半截带血的灯管。我的额头上正传来温热的刺痛。鲜血混合着化学雾的粉尘流进了我的眼睛。</strong></p>
+<p>根本没有丹去砸灯。在杨惊恐的瞳孔倒影里，那个像疯子一样暴起、毫无征兆地用钠灯自残的神经病，是我自己。</p>
+<p>这种认知上的错位感彻底摧毁了我的防线。我崩溃了。在鲜血和黑暗中，我抓着杨的手，把一切都吐了出来。</p>
+<p>我告诉了她下层排水系统的遭遇，告诉了她我接触了非法的"蓝窗"，告诉了她我看到了世界上还有另一种名为"蓝色"的东西。最重要的是，我残忍地扒开了她那个阶级跃升的美梦——我告诉她，"接收型共振晶体"根本不是倾听神明旨意的恩赐，那是一个单向的思想清洗器。一旦植入，她的自我就会被共振网络庞大的谎言与恐惧所淹没。她不仅会变成一具行尸走肉，共振网络还会顺着她的记忆，查出我接触过蓝窗的死罪。</p>
+<p>我看着杨的眼睛。那双刚才还盛满星光的眼睛，在一瞬间失去了所有的焦距。</p>
+<p>她的世界观在三分钟内被我亲手砸得粉碎。她一直以来拼命追求的、引以为傲的生存目标，原来只是一张为了方便屠宰而设立的单程车票。</p>
+<p>"我们逃吧。"杨反手抓紧了我，她的声音颤抖，却带着一种近乎绝望的决绝。她是一个好女人，好到即便认清了世界的荒谬，依然愿意为了我放弃那张毒苹果的兑换券。"去下层，去排水系统……我们去找那些断联者。"</p>`,
+                contentEn: `<p>Dan began appearing frequently in my life.</p>
+<p>He蹲在扇叶上嘲笑我的姿势 when I oiled the exhaust fan; he sat across the table when I ate配给合成粮, delivering endless脱口秀 about "carbohydrates being the cheapest stabilization tool for the lower class."</p>
+<div class="section-illustrations">
+  <img src="assets/chapter04/Chapter04_Frame01_Yang_CrystalImplant.png" alt="Yang's Crystal Implant">
+  <img src="assets/chapter04/Chapter04_Frame02_An_Confession.png" alt="An's Confession">
+</div>
+<p>At first, I tried to ignore him. But later I realized — when there's a voice in your head that's smarter than you, more cutting, and completely洞悉你所有的懦弱 — you can't ignore it. He was like a fish bone in my throat, constantly reminding me: you're no longer pure, you've been polluted by that blue light, you're a装睡的瞎子.</p>
+<p>But what truly pressed that fish bone into my heart was Yang.</p>
+<p>That night, Yang rushed back to our small residence with a近乎狂热的喜悦 I'd never seen. Her photosynthetic bacteria patches glowed with病态的高光 under her excited mood.</p>
+<p>"Ahn! It's approved! Approved from above!" Yang grabbed my shoulders, nails几乎嵌进我的肉里. "A B-party legislator needs a middle-tier representative. Because of that high-purity crystal core waste material I submitted, I was selected! They'll perform the 'receiving-type resonant crystal' implantation surgery next month! We can even move to the穹顶区边缘, no longer having to breathe this damn chemical fog!"</p>
+<p>She excitedly描绘着 that future filled with clean oxygen and bright light patterns. Behind her, Dan leaned against the wall, looking at her with the眼神 of someone observing濒死实验小白鼠.</p>
+<p>"How touching," Dan吐出一口虚无的烟圈. "A工蜂 finally earned a spot on the dining table, and感激涕零because the plate is made of gold. Are you going to tell her, Ahn? Tell her what's really inside that毒苹果 called 'crystal'?"</p>
+<p>"Shut up." I咒骂.</p>
+<p>"Tell her!" Dan暴起,跨过狭小的房间, kicking the table over, then grabbing the portable sodium lamp on the table and smashing it against his own forehead.</p>
+<p>"Bang — !"</p>
+<p>The glass-shattering sound was like a thunderclap in the cramped room. The rust-gold light flickered twice and went out completely.</p>
+<p>"Ahn! Are you insane?!"</p>
+<p>Yang's terrified scream tore through the darkness.借着窗外透进来的微弱路灯, I lowered my head in a daze.</p>
+<p><strong>In my hand I held half a blood-stained lamp tube. A warm sting came from my forehead. Blood mixed with chemical fog dust flowed into my eyes.</strong></p>
+<p>There was no Dan smashing the lamp. In Yang's terrified pupils, the疯子 who暴起 without warning, self-harming with the sodium lamp, was me myself.</p>
+<p>This认知错位感 completely destroyed my defenses. I collapsed. In blood and darkness, I grabbed Yang's hand and吐了出来 everything.</p>
+<p>I told her about the下层排水系统的遭遇, told her I'd contacted the illegal "Blue Window," told her I'd seen another thing in this world called "blue." Most importantly, I brutally扒开了 her class-climbing dream — I told her the "receiving-type resonant crystal" was never a grant from gods listening to your prayers, but a one-way ideological washing machine. Once implanted, her self would be drowned in the resonance network's vast lies and fears. Not only would she become a行尸走肉, the resonance network would follow her memories to find out I'd contacted Blue Window — a capital crime.</p>
+<p>I looked into Yang's eyes. Those eyes that had just been full of starlight lost all focus in an instant.</p>
+<p>Her worldview was shattered by my own hands in three minutes. Her survival goal she'd been desperately pursuing, that she'd been proud of, was just a one-way ticket set up for convenient slaughter.</p>
+<p>"Let's run." Yang grabbed me back tightly, her voice trembling but带一种近乎绝望的决绝. She was a good woman, so good that even recognizing the world's absurdity, she was still willing to give up that poison apple兑换券 for me. "Go to the lower levels, to the drainage system... find those断联者."</p>`
+              },
+              {
+                id: '05',
+                title: '05. 监听器的狂想曲与单向门',
+                titleEn: '05. The Surveillance Device Rhapsody and the One-Way Door',
+                content: `<p>我们开始疯狂地收拾东西。其实没什么好收拾的，几个劣质的呼吸面罩，仅存的几张呼吸牌。</p>
+<div class="section-illustrations">
+  <img src="assets/chapter05/Chapter05_Frame01_Escape_Preparation_SteelPipe.png" alt="逃跑准备">
+  <img src="assets/chapter05/Chapter05_Frame02_Door_Breach.png" alt="门被撞破">
+</div>
+<p>就在我们准备推开门，潜入这座城市最深处的阴影时——</p>
+<p>"轰——！"</p>
+<p>门没有被推开，而是被定向爆破炸成了碎片。</p>
+<p>巨大的冲击波将我们掀翻在地。几道刺眼的高亮度战术探照灯直接灼烧着我们本就脆弱的光合菌。一群全副武装、佩戴着厚重防毒面具的安保部队涌入了我们狭小的房间。</p>
+<p>我趴在地上，耳朵里满是耳鸣声，但我突然明白了什么。</p>
+<p>"你们……怎么会……"杨绝望地在地上挣扎。</p>
+<p>为什么会这么快？为什么他们会知道？</p>
+<p>我的视线越过士兵军靴的缝隙，看向了天花板的通风口。我突然想起了前几天在下层遭遇扫荡时，那几个没能跑掉的断联者。在针对光合菌的极度残酷的神经刑讯下，有什么秘密是撬不开的呢？</p>
+<p><strong>没有所谓的未卜先知，也没有神明般的共振感应。有的只是最古老、最廉价的物理监听网络。</strong>从我接触蓝窗逃回来的那一天起，这个房间的每一个微小呼吸，都已经被记录在案。</p>
+<p>而我刚才向杨坦白的那番"大逆不道"的真相，就是触发这张罗网收网的最后口令。</p>
+<p>"目标确认。中层感染者及同谋，就地执行最高级别拘捕。"一个冰冷的电子音响起。</p>
+<p>一名士兵举起了枪托，狠狠地砸向我的后脑勺。</p>
+<p>在意识陷入黑暗的最后一秒，我没有感到疼痛，我只看到"丹"站在那个士兵的身后。他没有来救我，也没有愤怒。他只是用一种极其悲悯又极度嘲弄的眼神看着我，嘴角勾起了一个近乎癫狂的微笑。</p>`,
+                contentEn: `<p>We began frantically packing. Actually there was nothing to pack — just a few cheap呼吸面罩, the few remaining breath tokens.</p>
+<div class="section-illustrations">
+  <img src="assets/chapter05/Chapter05_Frame01_Escape_Preparation_SteelPipe.png" alt="Escape Preparation">
+  <img src="assets/chapter05/Chapter05_Frame02_Door_Breach.png" alt="Door Breach">
+</div>
+<p>Just as we were about to push open the door and dive into the deepest shadows of this city —</p>
+<p>"Boom — !"</p>
+<p>The door didn't open — it was blown apart by directional explosives.</p>
+<p>The massive blast wave threw us to the floor. Several blindingly bright tactical searchlights scorched our already fragile photosynthetic bacteria. A group of fully armed security forces in heavy防毒面具 flooded into our cramped room.</p>
+<p>I was on the ground, ears full of tinnitus, but I suddenly understood something.</p>
+<p>"How... could you..." Yang绝望地挣扎 on the ground.</p>
+<p>Why so fast? Why did they know?</p>
+<p>My gaze越过士兵军靴的缝隙, looking at the ceiling ventilation opening. I suddenly remembered the sweep in the lower levels days ago, the few断联者 who couldn't escape. Under the极度残酷的神经刑讯 against photosynthetic bacteria, what secret couldn't be撬开?</p>
+<p><strong>There was no所谓的未卜先知, no god-like resonance sensing. There was only the oldest, cheapest physical surveillance network.</strong> From the day I escaped after contacting Blue Window, every tiny breath in this room had been on record.</p>
+<p>And the "heretical" truth I just confessed to Yang was the final password that triggered this net to close.</p>
+<p>"Target confirmed. Middle-tier infected person and accomplice, immediate highest-level arrest." A cold electronic voice rang out.</p>
+<p>A soldier raised his rifle butt,狠狠砸向我的后脑勺.</p>
+<p>In the last second before consciousness plunged into darkness, I felt no pain. I only saw "Dan" standing behind that soldier. He didn't come to save me, wasn't angry. He just looked at me with an extremely悲悯又极度嘲弄的眼神, the corner of his mouth raised in an almost癫狂的微笑.</p>`
+              },
+              {
+                id: '06',
+                title: '06. 碎镜中的英雄与懦夫的倒影',
+                titleEn: '06. The Hero and Coward\'s Reflection in the Shattered Mirror',
+                content: `<p>我醒来时，闻到的是一种混杂着霉味和下水道污水的恶臭。</p>
+<p>这是一个下层废弃矿区的储藏室。没有钠黄昏的光，只有一台外壳破裂的旧纪元电视机，正发出"滋滋"的电流声。屏幕上播放着蜂巢议会的例行通报：</p>
+<p>"……今日凌晨，安保部队成功捣毁一处位于中层C-4区域的叛乱分子据点。男性主犯在逃，女性从犯已移交清洗中心进行'记忆格式化与边缘化流放'处理……"</p>
+<div class="section-illustrations">
+  <img src="assets/chapter06/Chapter06_Frame01_An_Attacking_Dan.png" alt="安攻击丹">
+  <img src="assets/chapter06/Chapter06_Frame02_Mirror_Revelation.png" alt="镜中真相">
+</div>
+<p>"醒了？痴情种。"</p>
+<p>丹坐在电视机旁边的破纸箱上，指间依旧夹着那根不存在的烟。红色的微光照亮了他那张充满戾气的脸。</p>
+<p>"杨呢？杨在哪？！"我猛地从地上弹起来，像一头被逼入绝境的野兽般扑向他。</p>
+<p>"在电视里咯。'移交清洗中心'，你知道这是什么意思吧？就是脑子被烧成白痴，然后扔到矿区最底层去挖矿，直到变成一块没有温度的石头。"丹冷冷地看着我，"至于你，不用谢我。如果不是我在那个安保的枪托砸下来的一瞬间接管了你的身体，用一把生锈的螺丝刀捅穿了他的动脉然后跳进了排风管道，你现在大概和她在同一个焚化炉里排队。"</p>
+<p>"你救了我？"我死死地盯着他，眼睛里几乎要滴出血来，"你救了我，却把她留在了那里？！你为什么不救她！为什么不让我去保护她！"</p>
+<p>所有的绝望、懊悔和认知的过载在这一刻彻底爆发。我挥起拳头，狠狠地砸向丹的脸。</p>
+<p>一拳。两拳。我把所有的愤怒倾注在这个自称救了我的混蛋身上。拳头打在肉体上的触感是如此真实，指骨传来的剧痛让我感到一种病态的快感。我要杀了他，我要杀了这个只会说风凉话的幻影，我要杀了这座城市。</p>
+<p>丹被我打得跌坐在地上，鼻青脸肿，鲜血从他的嘴角流下。但他没有还手，他只是躺在尘土里，疯狂地、歇斯底里地大笑起来。</p>
+<p>"哈哈哈……你还在装什么呢，安？你到底在打谁？"</p>
+<p>他颤抖着抬起手，指向了房间角落里的一面沾满灰尘的破烂镜子。</p>
+<p>我顺着他的手指看过去。</p>
+<p><strong>电视机微弱的蓝光打在镜面上。镜子里没有丹。镜子里只有一个穿着派普族工装、满脸鲜血、鼻青脸肿、右手关节血肉模糊的男人。</strong></p>
+<p><strong>那是我。</strong></p>
+<p><strong>我在打我自己。</strong></p>
+<p>丹的身影在空气中像被风吹散的化学雾一样，渐渐扭曲、消失。</p>
+<p><strong>没有赛博朋克式的救世主，没有藏在暗处的超级战友。一切都是我这颗承受不住"认知过曝"的大脑制造出来的幻觉。</strong></p>
+<p>在安保部队破门而入的那一刻，那个抛弃了相爱多年的女友，像条野狗一样夺路而逃的懦夫，不是什么被唤醒的反叛人格。那就是我。是我为了活下去的本能，压倒了一切道德与爱情。</p>
+<p>我瘫坐在碎玻璃里，看着镜子里那个丑陋的自己，终于忍不住放声大哭。<strong>清醒，真的是一种不治之症。</strong></p>`,
+                contentEn: `<p>When I woke up, what I smelled was a stench mixed with mold smell and sewer wastewater.</p>
+<p>This was a storage room in an abandoned lower-level mining area. No sodium dusk light — only an old-era TV with a cracked shell, emitting "buzzing" electrical sounds. On screen, the Hive Council's regular bulletin played:</p>
+<p>"...Early this morning, security forces successfully raided a rebel stronghold in middle-tier C-4 area. Male main suspect at large, female accomplice handed over to the Purification Center for 'memory formatting and marginalization exile' processing..."</p>
+<div class="section-illustrations">
+  <img src="assets/chapter06/Chapter06_Frame01_An_Attacking_Dan.png" alt="An Attacking Dan">
+  <img src="assets/chapter06/Chapter06_Frame02_Mirror_Revelation.png" alt="Mirror Revelation">
+</div>
+<p>"Awake, lovesick fool?"</p>
+<p>Dan sat on a broken cardboard box next to the TV, still holding that non-existent cigarette between his fingers. Red micro-light illuminated his face full of malice.</p>
+<p>"Where is Yang? WHERE IS YANG?!" I leapt up from the ground, pouncing towards him like a beast driven to desperation.</p>
+<p>"She's in the TV, obviously. 'Handed over to Purification Center' — you know what that means, right? Brain burned into idiot, then thrown to the lowest mining level to dig ore until becoming a rock without temperature." Dan looked at me coldly. "As for you — don't thank me. If I hadn't taken over your body the moment the security's rifle butt was about to strike your head, stabbing through his artery with a rusty screwdriver and jumping into the exhaust pipe — you'd probably be in the same crematorium as her, in line."</p>
+<p>"You saved me?" I stared at him fixedly, eyes almost dripping blood. "You saved me but left her there?! Why didn't you save her! Why didn't you let me protect her!"</p>
+<p>All despair, regret, and cognitive overload erupted at this moment. I swung my fist, hard at Dan's face.</p>
+<p>Punch. Two punches. I poured all my anger onto this bastard who claimed to have saved me. The sensation of fist hitting flesh was so real — the sharp pain from my knuckles gave me a kind of pathological pleasure. I wanted to kill him, wanted to kill this phantom who only knew how to speak cold truths, wanted to kill this entire city.</p>
+<p>Dan was knocked to the ground, beaten black and blue, blood flowing from the corner of his mouth. But he didn't fight back — he just lay in the dust, laughing wildly, hysterically.</p>
+<p>"Hahaha... What are you still pretending for, Ahn? Who are you really hitting?"</p>
+<p>He trembling raised his hand, pointing to a dusty broken mirror in the corner of the room.</p>
+<p>I followed his finger to look.</p>
+<p><strong>The TV's faint blue light shone on the mirror surface. There was no Dan in the mirror. There was only a man in Pipe worker uniform, face covered in blood, black and blue, right hand knuckles bloody and blurred.</strong></p>
+<p><strong>That was me.</strong></p>
+<p><strong>I was hitting myself.</strong></p>
+<p>Dan's figure in the air, like chemical fog blown apart by wind, gradually twisted and disappeared.</p>
+<p><strong>No cybernetic savior, no hidden super ally. Everything was just a hallucination produced by my brain that couldn't handle "cognitive overexposure."</strong></p>
+<p>At the moment security forces broke through the door, that coward who abandoned his lover of many years, fleeing like a wild dog — that wasn't some awakened rebellious personality. That was me. It was my survival instinct overriding all morality and love.</p>
+<p>I collapsed sitting on broken glass, looking at my ugly reflection in the mirror, finally letting out a loud cry. <strong>Awakening — truly an incurable disease.</strong></p>`
+              },
+              {
+                id: '07',
+                title: '07. 以我残躯化烈火',
+                titleEn: '07. Using My Remains to Become a Blazing Fire',
+                content: `<p>大人总说，地底都市的钠黄昏是维持光合菌存活的恩赐。</p>
+<p>所谓恩赐，大概就是那种刺眼到让人几乎睁不开眼睛，却又不得不强迫自己去直视的东西吧。比如此刻穹顶区议会大厅外，那些亮得几乎要灼伤视网膜的人造太阳。</p>
+<div class="section-illustrations">
+  <img src="assets/chapter07/Chapter07_Frame01_An_SuicideVest.png" alt="安的自爆背心">
+  <img src="assets/chapter07/Chapter07_Frame02_Father_Sacrifice.png" alt="父亲的牺牲">
+</div>
+<p>我还是个孩子，所以我不太懂大人们的逻辑。我只知道，作为中层区域少有的、抽中了"穹顶参观限时通行证"的幸运家庭，父亲今天牵着我的手时，手心里全是因为激动而渗出的冷汗。</p>
+<p>"看啊，这就是议会大厅，整座城市最纯粹的共振频率就是从这里发出的。"父亲指着那扇洁白得毫无瑕疵的大门，语气里满是那种我并不理解的虔诚。</p>
+<p>然而，神圣的共振并没有发生。</p>
+<p>打破那份洁白的，是一团从议会大厅外墙巨型通风口里"呕吐"出来的污物。</p>
+<p>那是一个怎样的人呢？或者说，那还能被称为一个人吗？他穿着破烂的派普族工装，浑身上下沾满了下水道的恶臭、暗红色的干涸血迹和高浓度的化学粉尘。他的身上绑着一种极其粗劣的背心——用晶核废料和雷管东拼西凑缠出来的死亡装置。</p>
+<p>如果说这是一场伟大起义的开端，那这起义未免也太缺乏品味了。</p>
+<p>那个像患了狂犬病一样的男人，手里仅仅握着一把生锈的螺丝刀。他嘶吼着一种毫无意义的、类似野兽濒死前的哀鸣，扑向了刚好从大厅走出来的、那些拥有着极其明亮光纹的大人物们。</p>
+<p>动作毫无美感可言。扎进去，拔出来。鲜血瞬间溅满了洁白的地砖。</p>
+<p>安保部队的枪声在下一秒就响起了。但在密集的弹雨将那头生锈的野兽撕裂之前，他按下了手里那根简陋的引爆线。</p>
+<p><strong>剧烈的光和热膨胀开来的那一刻，我甚至没来得及感觉到恐惧。因为在爆炸的冲击波抵达我的视网膜之前，父亲已经扑了过来。</strong></p>
+<p>父亲的后背并不宽广。但在那一瞬间，他用一种完全违反他平时唯唯诺诺性格的绝对速度，将我死死压在了身下。他用自己所有的质量，替我挡住了那团由晶核废料催生出来的劣质太阳。</p>
+<p>等我被人从废墟里刨出来的时候，父亲已经死了。死得极其彻底，毫无悬念。</p>
+<p>我并没有立刻哭出声来。我只是呆呆地看着地砖上混杂在一起的、大人物的血，恐怖分子的血，还有我父亲的血。<strong>在物理学的定义里，它们的颜色并没有什么阶级之分。</strong></p>
+<p>……</p>
+<p>"呜咽。呜咽。呜咽。"</p>
+<p>隔壁房间里，母亲的哭声像是一台坏掉的节拍器，没有起伏，却又让人窒息，像极了中层通风管道里那永远不停歇的风声。</p>
+<p>我一个人坐在客厅的黑暗里，看着那台唯一还亮着的旧电视。</p>
+<p>屏幕闪烁着幽蓝的光，新闻女主播的光纹在镜头前亮得刺眼，她的声音甚至带着某种令人作呕的、完美的共振频率：</p>
+<p>"……嫌疑人安（Ahn），中层派普族通风维修工，于今日下午发动了极其恶劣的自杀式袭击，导致多名无辜人员伤亡……"</p>
+<p>"……鉴于下层暴民失控的危险性已得到证实，A派议员已联合提出紧急决议：正式驳回B派关于开放资源与阶级流动的全部改革法案。自即日起，下层呼吸配额削减百分之二十，安保级别提升至最高……"</p>
+<p>屏幕里的声音渐渐变得模糊。</p>
+<p>我突然觉得这是一件极其可笑的事情。虽然我还只是个孩子，但我本能地察觉到了某种荒诞的闭环。</p>
+<p>那个叫安的男人，那个把我父亲连同那些大人物一起炸成碎片的杀人魔，他在生命的最后一刻，大概是觉得自己正在用残躯化作烈火，去烧穿这座城市无尽的钠黄昏吧？</p>
+<p><strong>可惜啊，物理法则早就写好了结局。在极度缺氧的地下深渊里，火，是燃不长久的。</strong></p>
+<p><strong>他的火没有烧毁任何东西。那团自诩为觉醒与清醒的烈焰，最终仅仅是变成了蜂巢议会手里最好的一把焊枪——</strong></p>
+<p><strong>他们用这把焊枪，名正言顺地，把我们原本就生锈的牢笼，焊得更加死寂，更加坚不可摧了。</strong></p>
+<p>我关掉了电视机。在这座为了活下去而学会不看的城市里，黄昏，依然永恒。</p>`,
+                contentEn: `<p>Adults always said that the sodium dusk of the underground city was a blessing for photosynthetic bacteria survival.</p>
+<p>A blessing — probably meaning something so blinding you can barely keep your eyes open, yet have to force yourself to stare at anyway. Like the artificial suns outside the穹顶区 parliament building right now, so bright they almost scorched retinas.</p>
+<div class="section-illustrations">
+  <img src="assets/chapter07/Chapter07_Frame01_An_SuicideVest.png" alt="An's Suicide Vest">
+  <img src="assets/chapter07/Chapter07_Frame02_Father_Sacrifice.png" alt="Father's Sacrifice">
+</div>
+<p>I was just a child, so I didn't really understand adult logic. All I knew was — as one of the rare families in the middle-tier who had won the "穹顶参观限时通行证" lottery, my father held my hand today, his palm sweating from excitement.</p>
+<p>"Look, this is the parliament hall, where the purest resonance frequency in the entire city is emitted from." Father pointed at that flawlessly white door, his voice full of a piety I didn't understand.</p>
+<p>However, the sacred resonance didn't happen.</p>
+<p>What broke that whiteness was a mass of "vomited" filth from the parliament hall's giant ventilation opening on the exterior wall.</p>
+<p>What kind of person was that? Or rather — could it still be called a person? He wore tattered Pipe族工装, covered all over with the stench of sewers, dark red dried blood stains, and high-concentration chemical dust. On his body was an extremely crude vest — a death device assembled from crystal core waste and detonators.</p>
+<p>If this was the beginning of a great uprising, the uprising was in terribly poor taste.</p>
+<p>That man acting like he had rabies, holding only a rusty screwdriver, roared a meaningless, beast-like dying gasp, and pounced on those大人物 with extremely bright light patterns coming out of the hall.</p>
+<p>The movements had no aesthetic merit whatsoever. Stab in, pull out. Blood instantly splattered across the white floor tiles.</p>
+<p>The security forces' gunshots rang out the next second. But before the dense rain of bullets could tear that rusty beast apart, he pressed the简陋引爆线 in his hand.</p>
+<p><strong>At the moment intense light and heat expanded — I didn't even have time to feel fear. Because before the blast's shockwave reached my retina, father had already pounced over me.</strong></p>
+<p>Father's back wasn't wide. But at that instant, he used a speed completely against his usual timid personality to press me firmly beneath him. He used all his mass to shield me from that劣质太阳 created by crystal core waste.</p>
+<p>When people dug me out of the rubble, father was already dead. Dead extremely completely, without suspense.</p>
+<p>I didn't immediately cry out. I just sat there dazed, looking at the mixed blood on the floor tiles — the big shots' blood, the terrorist's blood, and my father's blood. <strong>In physics' definition, their colors had no class distinction.</strong></p>
+<p>...</p>
+<p>"Sob. Sob. Sob."</p>
+<p>In the next room, mother's crying was like a broken metronome, no起伏, yet suffocating, just like the eternally unceasing wind sound in the middle-tier ventilation pipes.</p>
+<p>I sat alone in the dark of the living room, watching that only lit old TV.</p>
+<p>The screen flickered with faint blue light, the news anchor's light pattern bright and blinding on camera, her voice even carrying some nauseating, perfect共振频率:</p>
+<p>"...Suspect Ahn (安), middle-tier Pipe族 ventilation maintenance worker, launched an extremely malicious suicide attack this afternoon, causing multiple innocent casualties..."</p>
+<p>"...Given the proven danger of lower-level mob失控, A-party legislators have jointly proposed an emergency resolution: officially rejecting B-party's complete reform bill regarding resource openness and class mobility. Effective immediately, lower-level breath quotas reduced by twenty percent, security level raised to maximum..."</p>
+<p>The sound from the screen gradually blurred.</p>
+<p>I suddenly felt this was an extremely ridiculous matter. Although I was just a child, I instinctively察觉到了 a kind of荒诞闭环.</p>
+<p>That man named Ahn, the murderer who blew my father and those大人物 to pieces — at his last moment of life, he probably thought he was using his remains to become a blazing fire, to burn through this city's endless钠黄昏, right?</p>
+<p><strong>Unfortunately, the laws of physics had long written the ending. In the extremely oxygen-deficient underground abyss, fire — doesn't burn for long.</strong></p>
+<p><strong>His fire burned nothing. That flame self-proclaimed as awakening and clarity ultimately just became the best welding torch in the Hive Council's hands —</strong></p>
+<p><strong>They used this welding torch, with full propriety, to weld our already rusty prison even more silent, even more unbreakable.</strong></p>
+<p>I turned off the TV. In this city that learned to not look in order to survive, the dusk — still eternal.</p>`
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'folder-4',
+        name: '抵抗組織-宣傳材料',
+        path: 'poster',
+        items: [
+          { file: 'poster/Breath Right.jpg', displayName: '【呼吸權】BREATH RIGHT', narrative: '他們說空氣是交易品。\n他們說高度是通行證。\n他們說你的手只配伸向黑暗。\n我們不信。\nCORE LAYER奪走了陽光，我們就在地下集結。\n「ELEVATION IS PRIVILEGE」？我們把這句話刻在彈匣上，等有一天把槍口對準它的來源。\n這不是請願。\n這不是遊行。\n這是組織——行動——勝利。\n\n<i>They said air is a commodity.\nThey said elevation is a pass.\nThey said your hands are only meant to reach into darkness.\nWe don\'t buy it.\nCORE LAYER stole the sun. So we gather underground.\n"ELEVATION IS PRIVILEGE?" We engrave that line on every magazine — until we can point the barrel at its source.\nThis is not a petition.\nThis is not a march.\nThis is ORGANIZE — ACT — WIN.</i>' },
+          { file: 'poster/Space.jpg', displayName: '【地下】UNDERGROUND', unlockKey: true, narrative: '「自由之路，藏於地下」\n隧道深處不是終點。\n是我們的起點。\n每一條管道都是路線。\n每一個影子裡都是同袍。\n每一個從黑暗走向光明的腳步，都是他們的噩夢。\n組織。行動。勝利。\n不是因為看得到希望才堅持。\n是堅持了，才能讓希望找到我們。\n\n<i>"THE PATH TO FREEDOM LIES UNDERGROUND"\nThe tunnel\'s end is not our destination.\nIt\'s where we begin.\nEvery pipe is a route.\nEvery shadow holds a comrade.\nEvery step from darkness toward light is their nightmare.\nORGANIZE — ACT — WIN.\nWe don\'t hold on because we see hope.\nWe hold on so that hope can finally find us.</i>' },
+          { file: 'poster/Rise Up.jpg', displayName: '【起義】RISE UP', narrative: '「高度即特權」\n他們住在光裡。\n我們住在管道和黴菌里。\n他們的空氣是免費的。\n我們的呼吸是要付費的。\n這不是自然法則。\n這是他們寫的規則。\n而規則，就是用來被打破的。\n把這個結構從根部撼動。\n從邊緣開始。\n\n<i>"HEIGHT IS PRIVILEGE"\nThey live in the light.\nWe live among pipes and mold.\nTheir air is free.\nOur breath is metered.\nThis is not a law of nature.\nIt\'s a rule they wrote.\nAnd rules?\nThey\'re made to be broken.\nShatter this structure from the root.\nStart from the Edge.</i>' }
+        ]
+      },
+      {
+        id: 'folder-5',
+        name: '裝備檔案',
+        path: 'weapons',
+        items: [
+          { file: '简化文字标识概念图.png', displayName: '【淨化者】PURIFIER', narrative: '【淨化者】\n\n外觀是一根大型圓筒，口直徑約二十厘米，可安裝在移動平台上，也可由單兵攜帶。\n\n發射的是高濃度液態催化霧配方——不是戰爭時期的舊配方，是改良版，保留了令人失能的能力，但不再導致死亡（議會需要勞動力，不需要屍體）。\n\n吸入者在十分鐘內失去運動能力，意識模糊，光合菌進入抑制狀態。\n\n<i>[PURIFIER]\nA large cylindrical tube, approximately 20cm in diameter. Can be mounted on mobile platforms or carried by a single soldier.\n\nFires high-concentration liquid catalyst mist formula — not the old wartime formula, but an improved version that retains incapacitating ability but no longer causes death (the Council needs labor, not corpses).\n\nInhalers lose motor ability within 10 minutes, consciousness becomes blurred, photosynthetic bacteria enter suppressed state.</i>' },
+          { file: 'Crystal Spike 横版概念图.png', displayName: '【晶體刺針】CRYSTAL SPIKE', narrative: '【晶體刺針】\n\n最原始的武器之一。一根約十五厘米長的金屬刺，尖端鑲嵌著一小片從黑市購得的共振晶體碎片。\n\n設計邏輯極其直接：共振晶體與神經系統深度融合，破壞晶體就等於破壞那部分神經連接。\n\n用法是刺入目標頸後——那裡是共振晶體最近皮下表層的位置。一針下去，晶體被貫穿，共振能力永久受損。目標不會死，但再也接收不到任何共振頻率。\n\n<i>[CRYSTAL SPIKE]\nOne of the most primitive weapons. A metal spike about 15cm long with a small piece of resonant crystal fragments purchased from the black market embedded at the tip.\n\nThe design logic is extremely direct: resonant crystals are deeply integrated with the nervous system, destroying the crystal equals destroying that part of the neural connection.\n\nUsage: Pierce the back of the target\'s neck — that\'s where the resonant crystal is closest to the subcutaneous surface. One needle strike, the crystal is pierced, resonant ability permanently damaged. Target won\'t die but can no longer receive any resonant frequency.</i>' },
+          { file: 'Image 5(1).jpg', displayName: '【光環】YANG\'S HEADPIECE', narrative: '【光環】\n\nYANG的頭飾誕生於廢料與執念。\n\n最初只是三片黑市淘來的殘次光合菌，剪成菱形用銅絲串起——在灰撲撲的佇列裡，這點微光足以讓人誤以為她是上層視察員。\n\n安送她一瓶通風管裡撿來的催化物質，琥珀色液體被封在細玻璃管中，隨步伐輕晃如蜂蜜。\n\n真正的蛻變來自廢棄礦區的熒光菌。藍紫妖異的變異真菌，接觸皮膚會灼傷，卻能讓光芒增強三倍。楊冒著被化學霧侵蝕的風險採集，將它們滴入晶核碎片的裂紋。\n\n廢墟裡也能長出東西。被埋沒的人，也能發光。\n\n<i>[HALO]\n\nYANG\'s headpiece was born from waste and obsession.\n\nInitially just three pieces of defective photosynthetic bacteria scavenged from the black market, cut into diamonds and strung together with copper wire — in the gray queues, this tiny gleam was enough to make people mistake her for an upper-tier inspector.\n\nAhn gave her a bottle of catalytic substance捡来的 from the ventilation pipes, amber liquid sealed in a thin glass tube, gently swaying with each step like honey.\n\nThe real transformation came from fluorescent bacteria in the abandoned mining area. Blue-purple alien mutated fungi that burn skin on contact, but can amplify light threefold. Yang risked chemical fog erosion to collect them, dripping them into the cracks of crystal core fragments.\n\nThings can still grow in ruins. People who are buried can still shine.</i>' }
+        ]
+      },
+      {
+        id: 'folder-6',
+        name: 'карта',
+        path: 'map',
+        hidden: true,
+        items: [
+          { file: 'map/第一层核心穹顶区.png', displayName: '【第一層】CORE LAYER穹頂區', narrative: '核心層的天空是人造的。\n十二個人造太陽永遠停留在鈉黃昏的光譜裡，模拟著一種從未存在過的「自然」。\n這裡的空氣是免費的，呼吸是居民的權利而非特權。\n但這一切免費，都是建立在邊緣層的呼吸牌稅之上的。\n\n<i>[CORE LAYER]\nThe sky here is artificial.\nTwelve artificial suns permanently stay in the sodium-dusk spectrum, simulating a "nature" that never existed.\nAir here is free — breathing is a resident\'s right, not a privilege.\nBut all this freeness is built on the breath-token taxes of the Edge Layer.</i>' },
+          { file: 'map/第二层居住分配区.png', displayName: '【第二層】分配區ALLOCATED ZONE', narrative: '分配區是中層的肺。\n每一天，淨化後的空氣從這裡被泵送到上層；每一週，底層的呼吸牌稅從這裡被結算。\n這裡的人習慣排隊，習慣配額，習慣把自己的肺部標價。\n他們不是奴隸，他們只是忘記了自己有權利呼吸。\n\n<i>[ALLOCATED ZONE]\nThe Allocated Zone is the middle tier\'s lungs.\nEvery day, purified air is pumped from here to the upper levels; every week, breath-token taxes from the lower levels are settled here.\nPeople here are used to queuing, used to quotas, used to pricing their own lungs.\nThey are not slaves — they just forgot they have the right to breathe.</i>' },
+          { file: 'map/第三层工业管道区.png', displayName: '【第三層】工業管道區PIPE ZONE', narrative: '工業管道區是城市的腸子。\n廢水、廢氣、廢熱——所有上層不想要的東西都會在這裡被消化、被中和、被排放。\n維修工是這個生態系統的醫生。他們在通風管道裡爬行，修補著這座城市不願意承認的肛漏。\n\n<i>[PIPE ZONE]\nThe Pipe Zone is the city\'s intestine.\nWastewater, waste gas, waste heat — everything the upper levels don\'t want gets digested, neutralized, and discharged here.\nMaintenance workers are doctors of this ecosystem. They crawl through ventilation pipes, patching the city\'s unwilling-to-acknowledge anal leaks.</i>' },
+          { file: 'map/第四层深层矿区.png', displayName: '【第四層】深層礦區DEEP MINES', narrative: '礦區是城市的胃。\n這裡開採出的每一克晶核礦石，都會被送去上層變成議會廣場上的光紋裝飾。\n而在礦石開採過程中產生的剩餘氣體，則會被泵入下層，成為邊緣層人民的「配額」。\n不需要毒氣殺死你，只需要讓你在缺氧中慢慢窒息。\n\n<i>[DEEP MINES]\nThe Deep Mines are the city\'s stomach.\nEvery gram of crystal ore mined here gets sent to the upper levels to become light-pattern decorations on the Council square.\nThe surplus gases produced during mining are pumped to the lower levels, becoming the "quota" of Edge Layer citizens.\nNo need for poison gas to kill you — just let you slowly suffocate in oxygen deficiency.</i>' },
+          { file: 'map/第五层真空深井地.png', displayName: '【第五層】真空深井DEEPEST PIT', narrative: '真空深井是城市的肛門。\n所有被排出、被淨化、被排除的東西，最終都會抵達這裡。\n沒有光。沒有空氣。沒有秩序。\n只有絕對的黑暗，和絕對的自由。\n\n<i>[DEEPEST PIT]\nThe Deepest Pit is the city\'s anus.\nEverything evacuated, purified, and excluded eventually arrives here.\nNo light. No air. No order.\nOnly absolute darkness, and absolute freedom.</i>' },
+          { file: 'map/地下城地图.png', displayName: '【全域】UNDERGROUND CITY OVERVIEW', narrative: '地下城的整體結構。\n五層垂直結構，從核心層的穹頂區，到底層的真空深井。\n每一層都是這個系統的一環——上层剥削下层，下層支撐上層。\n打破這個循環的方法只有一個：從邊緣開始動搖核心。\n\n<i>[OVERVIEW]\nThe overall structure of the Underground City.\nFive vertical layers — from the Core Layer\'s dome area at the top, to the Deepest Pit at the bottom.\nEach layer is a link in the system — upper levels exploit lower levels, lower levels support upper levels.\nOnly one way to break this cycle: start from the Edge and shake the Core.</i>' }
+        ]
+      }
+    ];
+
+    let currentView = 'folders';
+    let currentFolder = null;
+    let currentItem = null;
+    let currentSection = 0;
+    let currentLang = 'zh';
+    let hiddenFolderUnlocked = false;
+
+    function unlockHiddenFolder() {
+      hiddenFolderUnlocked = true;
+      renderFolders();
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'zh' ? 'en' : 'zh';
+      renderSection();
+    }
+
+    function renderSection() {
+      const item = currentItem;
+      if (!item || !item.sections || !item.sections[currentSection]) return;
+
+      const section = item.sections[currentSection];
+      const contentEl = document.getElementById('chapterContent');
+      const titleEl = document.querySelector('.section-title');
+
+      if (currentLang === 'en' && section.contentEn) {
+        contentEl.innerHTML = `<h2 class="section-title">${section.titleEn}</h2>${section.contentEn}`;
+        contentEl.classList.add('en');
+      } else {
+        contentEl.innerHTML = `<h2 class="section-title">${section.title}</h2>${section.content}`;
+        contentEl.classList.remove('en');
+      }
+
+      document.getElementById('prevSection').disabled = currentSection === 0;
+      document.getElementById('nextSection').disabled = currentSection === item.sections.length - 1;
+
+      renderSectionNav();
+    }
+
+    function renderFolders() {
+      const grid = document.getElementById('folderGrid');
+      const imageGrid = document.getElementById('imageGrid');
+      const viewer = document.getElementById('viewer');
+      const chapterReader = document.getElementById('chapterReader');
+      const backBtn = document.getElementById('backBtn');
+
+      document.querySelector('.terminal-header').style.display = '';
+      grid.style.display = '';
+      imageGrid.style.display = 'none';
+      viewer.classList.remove('active');
+      chapterReader.classList.remove('active');
+      backBtn.classList.remove('active');
+
+      const visibleFolders = ARCHIVE_DATA.filter(folder => !folder.hidden || (folder.hidden && hiddenFolderUnlocked));
+      grid.innerHTML = visibleFolders.map(folder => `
+        <div class="folder-card ${folder.hidden ? 'hidden-folder' : ''}" onclick="openFolder('${folder.id}')">
+          <div class="folder-icon">${folder.id === 'folder-6' && hiddenFolderUnlocked ? '🗺️' : (folder.hidden && hiddenFolderUnlocked ? '🔓' : '📁')}</div>
+          <div class="folder-name">${folder.name}</div>
+          <div class="folder-meta">${folder.items.length} IMAGES</div>
+        </div>
+      `).join('');
+    }
+
+    function openFolder(folderId) {
+      const folder = ARCHIVE_DATA.find(f => f.id === folderId);
+      if (!folder) return;
+
+      // Handle external link folders
+      if (folder.external) {
+        window.location.href = folder.external;
+        return;
+      }
+
+      currentFolder = folder;
+      currentView = 'images';
+      currentItem = null;
+
+      const grid = document.getElementById('folderGrid');
+      const imageGrid = document.getElementById('imageGrid');
+      const viewer = document.getElementById('viewer');
+      const chapterReader = document.getElementById('chapterReader');
+      const backBtn = document.getElementById('backBtn');
+
+      document.querySelector('.terminal-header').style.display = 'none';
+      grid.style.display = 'none';
+      imageGrid.style.display = '';
+      viewer.classList.remove('active');
+      chapterReader.classList.remove('active');
+      backBtn.classList.add('active');
+
+      imageGrid.innerHTML = folder.items.map((item, index) => {
+        const hasChapter = item.hasChapter ? '<button class="action-btn" onclick="event.stopPropagation(); openChapter(\'' + folderId + '\', ' + index + ')">閱讀章節</button>' : '';
+        return `
+        <div class="image-card" onclick="openViewer('${folderId}', ${index})">
+          <img src="assets/${item.file}" alt="${item.displayName || item.file}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23333%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23666%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2214%22>NO IMAGE</text></svg>'">
+          <div class="card-info">
+            <div class="card-name">${item.displayName || item.file}</div>
+            <div class="card-actions">
+              <button class="action-btn" onclick="event.stopPropagation(); openViewer('${folderId}', ${index})">查看叙事</button>
+              ${hasChapter}
+            </div>
+          </div>
+        </div>
+      `}).join('');
+    }
+
+    function openViewer(folderId, itemIndex) {
+      const folder = ARCHIVE_DATA.find(f => f.id === folderId);
+      if (!folder) return;
+
+      const item = folder.items[itemIndex];
+      if (!item || item.hasChapter) return;
+
+      currentItem = item;
+      currentView = 'viewer';
+
+      const grid = document.getElementById('folderGrid');
+      const imageGrid = document.getElementById('imageGrid');
+      const viewer = document.getElementById('viewer');
+      const chapterReader = document.getElementById('chapterReader');
+      const backBtn = document.getElementById('backBtn');
+
+      document.querySelector('.terminal-header').style.display = 'none';
+      grid.style.display = 'none';
+      imageGrid.style.display = 'none';
+      viewer.classList.add('active');
+      chapterReader.classList.remove('active');
+      backBtn.classList.add('active');
+
+      document.getElementById('viewerImg').src = `assets/${item.file}`;
+      document.getElementById('viewerTitle').textContent = item.displayName || item.file;
+      let narrativeHtml = item.narrative.replace(/\n/g, '<br>');
+      if (item.unlockKey && !hiddenFolderUnlocked) {
+        narrativeHtml += `<div class="unlock-section" onclick="unlockHiddenFolder()"><span class="unlock-text">「自由之路，藏於地下」</span><br><span class="unlock-subtext">[ 解鎖隱藏文件 ]</span></div>`;
+      }
+      document.getElementById('viewerText').innerHTML = narrativeHtml;
+    }
+
+    function openChapter(folderId, itemIndex) {
+      const folder = ARCHIVE_DATA.find(f => f.id === folderId);
+      if (!folder) return;
+
+      const item = folder.items[itemIndex];
+      if (!item || !item.hasChapter) return;
+
+      currentItem = item;
+      currentSection = 0;
+      currentView = 'chapter';
+
+      const grid = document.getElementById('folderGrid');
+      const imageGrid = document.getElementById('imageGrid');
+      const viewer = document.getElementById('viewer');
+      const chapterReader = document.getElementById('chapterReader');
+      const backBtn = document.getElementById('backBtn');
+
+      document.querySelector('.terminal-header').style.display = 'none';
+      grid.style.display = 'none';
+      imageGrid.style.display = 'none';
+      viewer.classList.remove('active');
+      chapterReader.classList.add('active');
+      backBtn.classList.add('active');
+
+      document.getElementById('chapterTitle').textContent = item.chapterTitle;
+      document.getElementById('chapterSubtitle').textContent = item.chapterSubtitle;
+
+      renderSectionNav();
+      renderSection();
+    }
+
+    function renderSectionNav() {
+      const item = currentItem;
+      if (!item || !item.sections) return;
+
+      const nav = document.getElementById('sectionNav');
+      nav.innerHTML = item.sections.map((section, index) => `
+        <button class="nav-item ${index === currentSection ? 'active' : ''}" onclick="goToSection(${index})">
+          ${section.id}
+        </button>
+      `).join('');
+    }
+
+    function goToSection(index) {
+      currentSection = index;
+      renderSection();
+      window.scrollTo(0, 0);
+    }
+
+    function prevSection() {
+      if (currentSection > 0) {
+        currentSection--;
+        renderSection();
+        window.scrollTo(0, 0);
+      }
+    }
+
+    function nextSection() {
+      const item = currentItem;
+      if (item && currentSection < item.sections.length - 1) {
+        currentSection++;
+        renderSection();
+        window.scrollTo(0, 0);
+      }
+    }
+
+    function goBack() {
+      if (currentView === 'chapter') {
+        openFolder(currentFolder.id);
+      } else if (currentView === 'viewer') {
+        openFolder(currentFolder.id);
+      } else if (currentView === 'images') {
+        renderFolders();
+      }
+    }
+
+    // Event listeners
+    document.getElementById('prevSection').addEventListener('click', prevSection);
+    document.getElementById('nextSection').addEventListener('click', nextSection);
+
+    // Init
+    renderFolders();
+  </script>
+</body>
+</html>
