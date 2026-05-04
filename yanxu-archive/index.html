@@ -522,12 +522,18 @@
                 id: '01',
                 title: '一、建城與下沉',
                 titleEn: 'I. Construction and Descent',
-                content: `<p>地面生態崩潰不是突發災難，是幾代人累積的結果。化學戰爭污染大氣層，工業毒素滲入土壤，穹頂外的世界進入不可逆的系統性衰敗。</p>
+                content: `<div class="section-illustrations">
+  <img src="assets/湮墟公開檔案_Q版封面.png" alt="湮墟-公開檔案">
+</div>
+<p>地面生態崩潰不是突發災難，是幾代人累積的結果。化學戰爭污染大氣層，工業毒素滲入土壤，穹頂外的世界進入不可逆的系統性衰敗。</p>
 <p>最初下到地底的不是難民——是先行者。有資源、有技術、有判斷力，相信自己在保存人類文明的火種。</p>
 <p>建城第一代是真正意義上的英雄時代。在地底九百米挖掘穹頂、建立核聚變供能系統、點亮第一顆人造太陽。物資極度匱乏，每個決策關乎生死。</p>
 <p>那時候「誰能共振、誰來協調」有實用邏輯——共振能力讓協調效率倍增，在建城期這是真實優勢，不是謊言。</p>
 <p>那代人相信這是暫時的。相信終有一天地面會恢復，人類會回去。</p>`,
-                contentEn: `<p>The surface ecological collapse was not a sudden disaster but the result of several generations of accumulation. Chemical warfare polluted the atmosphere, industrial toxins seeped into the soil, and the world outside the dome entered irreversible systemic decay.</p>
+                contentEn: `<div class="section-illustrations">
+  <img src="assets/湮墟公開檔案_Q版封面.png" alt="YANXU PUBLIC ARCHIVE">
+</div>
+<p>The surface ecological collapse was not a sudden disaster but the result of several generations of accumulation. Chemical warfare polluted the atmosphere, industrial toxins seeped into the soil, and the world outside the dome entered irreversible systemic decay.</p>
 <p>The first to descend were not refugees — they were pioneers. With resources, technology, and judgment, believing they were preserving the flame of human civilization.</p>
 <p>The founding generation was truly the heroic era. Excavating the dome at 900 meters underground, establishing fusion power systems, lighting the first artificial sun. Material resources were extremely scarce, every decision meant life or death.</p>
 <p>Back then, "who can resonate, who coordinates" had practical logic — resonant ability doubled coordination efficiency, during construction this was a real advantage, not a lie.</p>
@@ -617,7 +623,6 @@
         name: '藍窗',
         path: 'chapter03',
         items: [
-          { file: '呼吸参政权益抽象海报.png', displayName: '【呼吸權】BREATH RIGHTS', narrative: '【呼吸權】\n\n 呼吸不是特權。\n\n 這是我們的宣言，也是我們的底線。\n 每一個人都有權利呼吸，每一口空氣都不應該被標價。\n\n 當他們把空氣裝進瓶子裡販賣，當他們在地下室收取氧氣費，我們就知道：\n 這個系統不是為了讓人類生存，它是為了讓少數人控制大多數人。\n\n 我們要打破這個規則。\n\n <i>[BREATH RIGHTS]\n\n Breathing is not a privilege.\n\n This is our declaration, and our bottom line.\n Everyone has the right to breathe, every breath should not be tagged with a price.\n\n When they put air into bottles and sell it, when they charge oxygen fees in basements, we know:\n This system isn\'t designed for human survival — it\'s designed for a few to control the many.\n\n We will break this rule.</i>' },
           { file: '蓝窗角色设定图.png', displayName: '【藍窗】BLUE WINDOW', narrative: '【藍窗】\n\n 代號：藍窗\n 角色：通訊專家\n\n 她的任務是維護地下鐵路的通訊網絡——確保每一條消息都能正確、及時地傳遞。\n\n 她的設備是一套改裝過的信號增強器，能夠在CORE LAYER的干擾下保持通訊暢通。\n 但這不是她最重要的工具。\n 她最重要的工具是她的沉默。\n\n 她很少說話，只用代碼交流。\n 所以當她開口時，每個人都會停下來傾聽。\n\n <i>[BLUE WINDOW]\n Codename: BLUE WINDOW\n Role: Communications Expert\n\n Her mission: maintain the underground railroad\'s communication network — ensuring every message is transmitted correctly and timely.\n\n Her equipment is a set of modified signal boosters, capable of maintaining communication despite CORE LAYER interference.\n But this isn\'t her most important tool.\n Her most important tool is her silence.\n\n She rarely speaks, communicating only in code.\n So when she speaks, everyone stops to listen.</i>',
             hasChapter: true,
             chapterTitle: '藍窗 BLUE WINDOW',
@@ -1156,13 +1161,14 @@
 
       imageGrid.innerHTML = folder.items.map((item, index) => {
         const hasChapter = item.hasChapter ? '<button class="action-btn" onclick="event.stopPropagation(); openChapter(\'' + folderId + '\', ' + index + ')">閱讀章節</button>' : '';
+        const showNarrative = !item.hasChapter ? '<button class="action-btn" onclick="event.stopPropagation(); openViewer(\'' + folderId + '\', ' + index + ')">查看叙事</button>' : '';
         return `
         <div class="image-card" onclick="openViewer('${folderId}', ${index})">
           <img src="assets/${item.file}" alt="${item.displayName || item.file}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23333%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 fill=%22%23666%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2214%22>NO IMAGE</text></svg>'">
           <div class="card-info">
             <div class="card-name">${item.displayName || item.file}</div>
             <div class="card-actions">
-              <button class="action-btn" onclick="event.stopPropagation(); openViewer('${folderId}', ${index})">查看叙事</button>
+              ${showNarrative}
               ${hasChapter}
             </div>
           </div>
