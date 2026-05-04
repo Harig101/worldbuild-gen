@@ -431,12 +431,13 @@
 
     .audio-player {
       position: fixed;
-      top: 20px;
+      bottom: 20px;
       right: 20px;
       border: 1px solid #333;
       background: #0a0a0a;
       padding: 15px 20px;
       z-index: 100;
+      cursor: move;
     }
 
     .audio-player audio {
@@ -1163,6 +1164,32 @@
     trackSelect.addEventListener('change', switchTrack);
     playBtn.addEventListener('click', togglePlay);
     bgAudio.volume = 0.5;
+
+    // Drag functionality
+    const audioPlayer = document.querySelector('.audio-player');
+    let isDragging = false;
+    let dragOffsetX, dragOffsetY;
+
+    audioPlayer.addEventListener('mousedown', (e) => {
+      if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') return;
+      isDragging = true;
+      dragOffsetX = e.clientX - audioPlayer.getBoundingClientRect().left;
+      dragOffsetY = e.clientY - audioPlayer.getBoundingClientRect().top;
+      audioPlayer.style.cursor = 'grabbing';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      audioPlayer.style.right = 'auto';
+      audioPlayer.style.bottom = 'auto';
+      audioPlayer.style.left = (e.clientX - dragOffsetX) + 'px';
+      audioPlayer.style.top = (e.clientY - dragOffsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      audioPlayer.style.cursor = 'move';
+    });
 
     function unlockHiddenFolder() {
       hiddenFolderUnlocked = true;
